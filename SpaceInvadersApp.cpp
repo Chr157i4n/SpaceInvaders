@@ -32,7 +32,7 @@ schuss::~schuss()
     //dtor
 }
 
-schuss Schuss[100];
+schuss Schuss[10];
 
 
 class spiel
@@ -44,7 +44,7 @@ class spiel
             tastatureingaben();
             schussbewegen();
             schiessenerlauben();
-
+            schussloeschen();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -120,6 +120,21 @@ spiel::schiessenerlauben()
     }
 }
 
+spiel::schussloeschen()
+{
+  for (int i=0;i<anzahlSchuesse;i++)
+        {
+          if ((Schuss[i].y<50) || (Schuss[i].y>fensterHoehe))       ///Schuss oben raus
+          {
+                for (int c=i;c<anzahlSchuesse-1;c++)
+                {
+                Schuss[c]=Schuss[c+1];
+                }
+                anzahlSchuesse=anzahlSchuesse-1;
+          }
+        }
+}
+
 spiel Spiel;
 
 
@@ -173,8 +188,9 @@ RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 void RenderTimer::Notify()
 {
     Spiel.schiessenerlauben();
-    Spiel.schussbewegen();
     Spiel.tastatureingaben();
+    Spiel.schussbewegen();
+    Spiel.schussloeschen();
     pane->Refresh();
 }
 
