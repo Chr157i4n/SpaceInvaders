@@ -43,6 +43,7 @@ class spiel
             normalerunde();
             tastatureingaben();
             schussbewegen();
+            schiessenerlauben();
 
 
     int spielerX=250-16;        //Anfangspositionen
@@ -51,11 +52,13 @@ class spiel
     int schussX;
     int schussY;
     int anzahlSchuesse=0;
+    bool darfschiessen=true;
 
 protected:
 
 private:
     int fensterHoehe=500, fensterBreite=500;
+    int schusszaehler;
 };
 
 spiel::spiel()
@@ -77,19 +80,23 @@ spiel::tastatureingaben()
 {
     if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A')) && (spielerX-5>=0) )
     {
-        spielerX=spielerX-1;
+        spielerX=spielerX-2;
     }
 
     if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D')) && (spielerX+48<=fensterBreite))
     {
-        spielerX=spielerX+1;
+        spielerX=spielerX+2;
     }
 
-    if(wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)' '))
+    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)' ')) && (darfschiessen==true))
     {
     anzahlSchuesse++;
-    Schuss[anzahlSchuesse].x=spielerX;
-    Schuss[anzahlSchuesse].y=spielerY;
+    Schuss[anzahlSchuesse-1].x=spielerX+9;      ///Schuss positionieren
+    Schuss[anzahlSchuesse-1].y=spielerY-8;
+
+    darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
+    schusszaehler=0;
+
     }
 
 }
@@ -98,10 +105,20 @@ spiel::schussbewegen()
 {
     for (int i=0;i<anzahlSchuesse;i++)
         {
-        Schuss[i].y--;
+        Schuss[i].y=Schuss[i].y-2;
         }
 }
 
+spiel::schiessenerlauben()
+{
+    schusszaehler++;
+
+    if (schusszaehler>50)
+    {
+    darfschiessen=true;
+    schusszaehler=0;
+    }
+}
 
 spiel Spiel;
 
@@ -155,6 +172,7 @@ RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 
 void RenderTimer::Notify()
 {
+    Spiel.schiessenerlauben();
     Spiel.schussbewegen();
     Spiel.tastatureingaben();
     pane->Refresh();
@@ -162,7 +180,7 @@ void RenderTimer::Notify()
 
 void RenderTimer::start()
 {
-    wxTimer::Start(15);
+    wxTimer::Start(30);
 }
 
 IMPLEMENT_APP(MyApp)
