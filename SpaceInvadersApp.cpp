@@ -6,7 +6,8 @@
 #include <ctime>
 #include <wx/icon.h>
 #include <wx/dcbuffer.h>
-
+#include <string>
+#include <sstream>
 
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben;
@@ -91,6 +92,7 @@ class spiel
     bool darfschiessen=true;
     bool aliensbewegensichnachrechts=true;
     int leben=3;
+    int punkte=0;
 
 protected:
 
@@ -153,6 +155,7 @@ spiel::tastatureingaben()
 
      if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
     {
+        punkte=0;
         anzahlSchuss=0;
         darfschiessen=true;
         leben=3;
@@ -253,6 +256,7 @@ spiel::trefferregistrieren()
                 Alien[d]=Alien[d+1];
                 }
             anzahlAlien--;
+            punkte=punkte+10;
             }
         }
    }
@@ -317,12 +321,13 @@ spiel::endeerkennug()
 {
     if (leben<=0)
     {
-                                ///Game Over
+        punkte=0;                        ///Game Over
         normalerunde();
     }
 
-    if (Alien[anzahlAlien-1].y>=380)
+    if (Alien[anzahlAlien-1].y>=360)
     {
+        punkte=0;
         leben=0;
         normalerunde();
     }
@@ -530,7 +535,7 @@ void BasicDrawPane::render( wxDC& dc )
 {
 
 
-
+    ///Rendering während das Spiel läuft
 
     if (Spiel.leben>0)
     {
@@ -583,10 +588,21 @@ void BasicDrawPane::render( wxDC& dc )
 
         }
 
+        ///Punktestand
+    dc.SetTextForeground( *wxRED );
+    dc.SetFont(wxFontInfo(12).FaceName("Distant Galaxy").Light());
+
+    wxString punktstand="Punkte: ";
+    punktstand << Spiel.punkte;
+
+    dc.DrawText(punktstand, 380, 10);
+
             }
 
 
     }
+
+    ///Game Over
  if (Spiel.leben<=0)
  {
     dc.SetTextForeground( *wxRED );
@@ -596,6 +612,9 @@ void BasicDrawPane::render( wxDC& dc )
     dc.DrawText(wxT("Neustart mit R"), 150, 250);
 
  }
+
+
+
 
 
 
