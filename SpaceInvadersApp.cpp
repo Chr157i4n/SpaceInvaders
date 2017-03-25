@@ -55,6 +55,7 @@ schuss::bewegen()
 
 
 
+
 schuss Schuss[10];
 
 
@@ -69,6 +70,7 @@ class spiel
             schiessenerlauben();
             schussloeschen();
             alienBewegen();
+            trefferregistrieren();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -191,6 +193,28 @@ spiel::alienBewegen()
 
 }
 
+spiel::trefferregistrieren()
+{
+   for (int i=0;i<anzahlSchuesse;i++)
+        for (int c=0;c<anzahlAliens;c++)
+        {
+            if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
+            {
+
+            for (int d=i;d<anzahlSchuesse-1;d++)
+                {
+                Schuss[d]=Schuss[d+1];
+                }
+            anzahlSchuesse--;
+
+            for (int d=c;d<anzahlAliens-1;d++)
+                {
+                Alien[d]=Alien[d+1];
+                }
+            anzahlAliens--;
+            }
+        }
+}
 
 spiel Spiel;
 
@@ -247,11 +271,15 @@ void RenderTimer::Notify()
     Spiel.schiessenerlauben();
     Spiel.tastatureingaben();
 
+
+    Spiel.schussloeschen();
+
     for (int i=0; i<Spiel.anzahlSchuesse;i++)
     {
         Schuss[i].bewegen();
-        Spiel.schussloeschen();
     }
+
+    Spiel.trefferregistrieren();
 
 
     Spiel.alienBewegen();
@@ -266,7 +294,7 @@ void RenderTimer::Notify()
 
 void RenderTimer::start()
 {
-    wxTimer::Start(30);
+    wxTimer::Start(16);
 }
 
 IMPLEMENT_APP(MyApp)
