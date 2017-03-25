@@ -2,13 +2,31 @@
 #include <wx/wx.h>
 #include <wx/timer.h>
 
-
-
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+#include <wx/icon.h>
 
 
 
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien;
+
+class alienschuss
+{
+    public:
+        alienschuss(){};
+        virtual ~alienschuss(){};
+        int x;
+        int y;
+        bewegen() {y=y+2;};
+
+    protected:
+
+    private:
+};
+
+alienschuss Alienschuss[100];
 
 class alien
 {
@@ -17,16 +35,13 @@ class alien
         virtual ~alien(){};
         int x;
         int y;
-        schiessen();
+
 
     protected:
 
     private:
 };
-alien::schiessen()
-{
 
-}
 
 
 
@@ -40,21 +55,13 @@ class schuss
         virtual ~schuss(){};
         int x;
         int y;
-        bewegen();
+        bewegen() {y=y-2;};
 
 
     protected:
 
     private:
 };
-
-schuss::bewegen()
-{
-    y=y-2;
-}
-
-
-
 
 schuss Schuss[10];
 
@@ -71,16 +78,19 @@ class spiel
             schussloeschen();
             alienBewegen();
             trefferregistrieren();
+            alienschiessen();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
 
     int schussX;
     int schussY;
-    int anzahlSchuesse=0;
-    int anzahlAliens=0;
+    int anzahlSchuss=0;
+    int anzahlAlien=0;
+    int anzahlAlienSchuss=0;
     bool darfschiessen=true;
     bool aliensbewegensichnachrechts=true;
+    int leben=3;
 
 protected:
 
@@ -94,8 +104,8 @@ spiel::normalerunde()
 {
         int spaltealien=0;
         int reihealien=1;
-        anzahlAliens=20;
-        for (int i=0;i<anzahlAliens;i++)
+        anzahlAlien=20;
+        for (int i=0;i<anzahlAlien;i++)
         {
            spaltealien++;
 
@@ -123,18 +133,23 @@ spiel::tastatureingaben()
 
     if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)' ')) && (darfschiessen==true))
     {
-    anzahlSchuesse++;
-    Schuss[anzahlSchuesse-1].x=spielerX+12;      ///Schuss positionieren
-    Schuss[anzahlSchuesse-1].y=spielerY-8;
+    anzahlSchuss++;
+    Schuss[anzahlSchuss-1].x=spielerX+12;      ///Schuss positionieren
+    Schuss[anzahlSchuss-1].y=spielerY-8;
 
     darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
     schusszaehler=0;
 
     }
 
+     if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
+    {
+        anzahlSchuss=0;
+        darfschiessen=true;
+        normalerunde();                                         //Restart
+    }
+
 }
-
-
 
 spiel::schiessenerlauben()
 {
@@ -149,22 +164,22 @@ spiel::schiessenerlauben()
 
 spiel::schussloeschen()
 {
-  for (int i=0;i<anzahlSchuesse;i++)
+  for (int i=0;i<anzahlSchuss;i++)
         {
           if ((Schuss[i].y<50) || (Schuss[i].y>fensterHoehe))       ///Schuss oben raus
           {
-                for (int c=i;c<anzahlSchuesse-1;c++)
+                for (int c=i;c<anzahlSchuss-1;c++)
                 {
                 Schuss[c]=Schuss[c+1];
                 }
-                anzahlSchuesse=anzahlSchuesse-1;
+                anzahlSchuss=anzahlSchuss-1;
           }
         }
 }
 
 spiel::alienBewegen()
 {
-    for (int i=0; i<anzahlAliens;i++)
+    for (int i=0; i<anzahlAlien;i++)
     {
 
         ///Aliens bewegen
@@ -176,7 +191,7 @@ spiel::alienBewegen()
       if ((Alien[i].x>fensterBreite-50) && (aliensbewegensichnachrechts))
       {
           aliensbewegensichnachrechts=false;
-            for (int c=0;c<anzahlAliens;c++)
+            for (int c=0;c<anzahlAlien;c++)
                 {
                 Alien[c].y=Alien[c].y+20;
                 }
@@ -184,7 +199,7 @@ spiel::alienBewegen()
       if ((Alien[i].x<2) && (!aliensbewegensichnachrechts))
         {
             aliensbewegensichnachrechts=true;
-            for (int c=0;c<anzahlAliens;c++)
+            for (int c=0;c<anzahlAlien;c++)
                 {
                 Alien[c].y=Alien[c].y+20;
                 }
@@ -195,25 +210,42 @@ spiel::alienBewegen()
 
 spiel::trefferregistrieren()
 {
-   for (int i=0;i<anzahlSchuesse;i++)
-        for (int c=0;c<anzahlAliens;c++)
+
+   for (int i=0;i<anzahlSchuss;i++)
+        for (int c=0;c<anzahlAlien;c++)
         {
             if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
             {
 
-            for (int d=i;d<anzahlSchuesse-1;d++)
+            for (int d=i;d<anzahlSchuss-1;d++)
                 {
                 Schuss[d]=Schuss[d+1];
                 }
-            anzahlSchuesse--;
+            anzahlSchuss--;
 
-            for (int d=c;d<anzahlAliens-1;d++)
+            for (int d=c;d<anzahlAlien-1;d++)
                 {
                 Alien[d]=Alien[d+1];
                 }
-            anzahlAliens--;
+            anzahlAlien--;
             }
         }
+}
+
+spiel::alienschiessen()
+{
+    for (int i=0;i<anzahlAlien;i++)
+    {
+        int zufall= std::rand()%1000+1;
+
+                if (zufall>995)
+                    {
+                    Alienschuss[anzahlAlienSchuss].x=Alien[i].x+14;
+                    Alienschuss[anzahlAlienSchuss].y=Alien[i].y+30;
+
+                    anzahlAlienSchuss++;
+                    }
+    }
 }
 
 spiel Spiel;
@@ -274,19 +306,22 @@ void RenderTimer::Notify()
 
     Spiel.schussloeschen();
 
-    for (int i=0; i<Spiel.anzahlSchuesse;i++)
+    for (int i=0; i<Spiel.anzahlSchuss;i++)
     {
         Schuss[i].bewegen();
+    }
+
+    for (int i=0; i<Spiel.anzahlAlienSchuss;i++)
+    {
+        Alienschuss[i].bewegen();
     }
 
     Spiel.trefferregistrieren();
 
 
     Spiel.alienBewegen();
-    for (int i=0; i<Spiel.anzahlAliens;i++)
-    {
-        Alien[i].schiessen();
-    }
+
+    Spiel.alienschiessen();
 
 
     pane->Refresh();
@@ -305,9 +340,8 @@ class MyFrame : public wxFrame
     BasicDrawPane* drawPane;
 
 public:
-    MyFrame() : wxFrame((wxFrame *)NULL, -1,  wxT("Space Invaders"), wxPoint(50,50), wxSize(500,500))
+    MyFrame() : wxFrame((wxFrame *)NULL, -1,  wxT("Space Invaders"), wxPoint(50,50), wxSize(500,500),wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
     {
-
 
 
         wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -315,12 +349,16 @@ public:
         sizer->Add(drawPane, 1, wxEXPAND);
         SetSizer(sizer);
 
+        SetMinSize(GetSize());
+        SetMaxSize(GetSize());
 
+        SetIcon(wxICON(spaceinvadersicon));
 
 
         timer = new RenderTimer(drawPane);
         Show();
         timer->start();
+
     }
     ~MyFrame()
     {
@@ -347,7 +385,7 @@ END_EVENT_TABLE()
 
 bool MyApp::OnInit()
 {
-
+    std::srand(std::time(0));   //Zufallszahlen generieren
 
     ///Bilder Laden
     wxInitAllImageHandlers();
@@ -415,21 +453,33 @@ void BasicDrawPane::render( wxDC& dc )
     dc.DrawBitmap(bHintergrund,0,0);
 
     }
+
+    if (bSchuss.IsOk())
+    {
+        for (int i=0;i<Spiel.anzahlSchuss;i++)
+        {
+        dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
+        }
+    }
+
+    if (bSchuss.IsOk())
+    {
+        for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+        {
+        dc.DrawBitmap(bAlienschuss,Alienschuss[i].x,Alienschuss[i].y);
+        }
+    }
+
+
     if (bRaumschiff.IsOk())
     {
     dc.DrawBitmap(bRaumschiff,Spiel.spielerX,Spiel.spielerY);
     }
 
-    if (bSchuss.IsOk())
-    {
-        for (int i=0;i<Spiel.anzahlSchuesse;i++)
-        {
-        dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
-        }
-    }
+
     if (bAlien.IsOk())
     {
-        for (int i=0;i<Spiel.anzahlAliens;i++)
+        for (int i=0;i<Spiel.anzahlAlien;i++)
         {
         dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
         }

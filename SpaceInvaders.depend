@@ -2669,7 +2669,7 @@
 
 1485972782 c:\wxwidgets-3.1.0\wx310\include\wx\qt\mdi.h
 
-1485844170 source:c:\users\christian\git\spaceinvaders\resource.rc
+1490455948 source:c:\users\christian\git\spaceinvaders\resource.rc
 	"wx/msw/wx.rc"
 
 1485972782 c:\wxwidgets-3.1.0\wx310\include\wx\msw\wx.rc
@@ -2678,10 +2678,14 @@
 
 1485972782 c:\wxwidgets-3.1.0\wx310\include\wx\msw\rcdefs.h
 
-1490449569 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
+1490455954 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
 	<wx/sizer.h>
 	<wx/wx.h>
 	<wx/timer.h>
+	<cstdlib>
+	<iostream>
+	<ctime>
+	<wx/icon.h>
 
 1490364698 c:\users\christian\git\spaceinvaders\spiel.h
 
