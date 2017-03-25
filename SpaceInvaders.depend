@@ -2678,7 +2678,7 @@
 
 1485972782 c:\wxwidgets-3.1.0\wx310\include\wx\msw\rcdefs.h
 
-1490473101 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
+1490481251 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
 	<wx/sizer.h>
 	<wx/wx.h>
 	<wx/timer.h>
@@ -2687,6 +2687,8 @@
 	<ctime>
 	<wx/icon.h>
 	<wx/dcbuffer.h>
+	<string>
+	<sstream>
 
 1490364698 c:\users\christian\git\spaceinvaders\spiel.h
 

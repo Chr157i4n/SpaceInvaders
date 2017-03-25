@@ -10,7 +10,20 @@
 #include <sstream>
 
 
-wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben;
+wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
+
+class explosion
+{
+    public:
+        explosion(){};
+        virtual ~explosion(){};
+        int x;
+        int y;
+        int laufzeit;
+
+};
+
+explosion Explosion[10];
 
 class alienschuss
 {
@@ -80,6 +93,7 @@ class spiel
             trefferregistrieren();
             alienschiessen();
             endeerkennug();
+            explosionenentfernen();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -89,6 +103,7 @@ class spiel
     int anzahlSchuss=0;
     int anzahlAlien=0;
     int anzahlAlienSchuss=0;
+    int anzahlExplosion=0;
     bool darfschiessen=true;
     bool aliensbewegensichnachrechts=true;
     int leben=3;
@@ -243,20 +258,28 @@ spiel::trefferregistrieren()
           for (int c=0;c<anzahlAlien;c++)
         {
             if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
-            {
+            {               ///Treffer erkennen
+
+            Explosion[anzahlExplosion].x=Alien[c].x;
+            Explosion[anzahlExplosion].y=Alien[c].y;
+            Explosion[anzahlExplosion].laufzeit=0;
+            anzahlExplosion++;
 
             for (int d=i;d<anzahlSchuss-1;d++)
-                {
+                {                                   ///Schuss löschen
                 Schuss[d]=Schuss[d+1];
                 }
             anzahlSchuss--;
 
-            for (int d=c;d<anzahlAlien-1;d++)
+            for (int d=c;d<anzahlAlien-1;d++)       ///Alien löschen
                 {
                 Alien[d]=Alien[d+1];
                 }
             anzahlAlien--;
-            punkte=punkte+10;
+
+            punkte=punkte+10;               ///Punkte hinzufügen
+
+
             }
         }
    }
@@ -270,6 +293,11 @@ spiel::trefferregistrieren()
 
             if ( (Alienschuss[i].x>spielerX) && (Alienschuss[i].x+3<spielerX+25) && (Alienschuss[i].y>spielerY) & (Alienschuss[i].y+9<spielerY+45 ) )
             {
+
+            Explosion[anzahlExplosion].x=spielerX;
+            Explosion[anzahlExplosion].y=spielerY;
+            Explosion[anzahlExplosion].laufzeit=0;
+            anzahlExplosion++;
 
             for (int d=i;d<anzahlAlienSchuss-1;d++)
                 {
@@ -339,6 +367,26 @@ spiel::endeerkennug()
 
 
 }
+
+spiel::explosionenentfernen()
+{
+    for (int i=0;i<anzahlExplosion;i++)
+    {
+        Explosion[i].laufzeit++;
+
+        if (Explosion[i].laufzeit>25)
+        {
+            for (int c=i;c<anzahlExplosion;c++)
+            {
+            Explosion[c]=Explosion[c+1];
+            }
+            anzahlExplosion--;
+
+        }
+
+    }
+}
+
 spiel Spiel;
 
 
@@ -409,6 +457,7 @@ void RenderTimer::Notify()
 
     Spiel.trefferregistrieren();
 
+    Spiel.explosionenentfernen();
 
     Spiel.alienBewegen();
 
@@ -482,12 +531,13 @@ bool MyApp::OnInit()
 
     ///Bilder Laden
     wxInitAllImageHandlers();
-    bHintergrund.LoadFile("Hintergrund.png",wxBITMAP_TYPE_PNG);
-    bRaumschiff.LoadFile("Raumschiff.png",wxBITMAP_TYPE_PNG);
-    bSchuss.LoadFile("Munition.png",wxBITMAP_TYPE_PNG);
-    bAlienschuss.LoadFile("Alienmunition.png",wxBITMAP_TYPE_PNG);
-    bAlien.LoadFile("Alien.png",wxBITMAP_TYPE_PNG);
-    bLeben.LoadFile("Leben.png",wxBITMAP_TYPE_PNG);
+    bHintergrund.LoadFile("Images\\Hintergrund.png",wxBITMAP_TYPE_PNG);
+    bRaumschiff.LoadFile("Images\\Raumschiff.png",wxBITMAP_TYPE_PNG);
+    bSchuss.LoadFile("Images\\Munition.png",wxBITMAP_TYPE_PNG);
+    bAlienschuss.LoadFile("Images\\Alienmunition.png",wxBITMAP_TYPE_PNG);
+    bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);
+    bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
+    bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
 
     //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
 
@@ -588,7 +638,11 @@ void BasicDrawPane::render( wxDC& dc )
 
         }
 
-        ///Punktestand
+
+
+            }
+
+             ///Punktestand
     dc.SetTextForeground( *wxRED );
     dc.SetFont(wxFontInfo(12).FaceName("Distant Galaxy").Light());
 
@@ -597,6 +651,14 @@ void BasicDrawPane::render( wxDC& dc )
 
     dc.DrawText(punktstand, 380, 10);
 
+
+
+            if (bExplosion.IsOk())
+            {
+                    for (int i=0;i<Spiel.anzahlExplosion;i++)
+                    {
+                    dc.DrawBitmap(bExplosion,Explosion[i].x,Explosion[i].y);
+                    }
             }
 
 
