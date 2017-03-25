@@ -8,13 +8,32 @@
 
 
 
-wxBitmap bHintergrund,bRaumschiff,bSchuss;
+wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien;
+
+class alien
+{
+    public:
+        alien(){};
+        virtual ~alien(){};
+        int x;
+        int y;
+        schiessen();
+    protected:
+
+    private:
+};
+alien::schiessen()
+{
+
+}
+
+alien Alien[20];
 
 class schuss
 {
     public:
-        schuss();
-        virtual ~schuss();
+        schuss(){};
+        virtual ~schuss(){};
         int x;
         int y;
     protected:
@@ -22,15 +41,7 @@ class schuss
     private:
 };
 
-schuss::schuss()
-{
-    //ctor
-}
 
-schuss::~schuss()
-{
-    //dtor
-}
 
 schuss Schuss[10];
 
@@ -38,8 +49,8 @@ schuss Schuss[10];
 class spiel
 {
     public:
-            spiel();
-            virtual ~spiel();
+            spiel(){};
+            virtual ~spiel(){};
             normalerunde();
             tastatureingaben();
             schussbewegen();
@@ -52,6 +63,7 @@ class spiel
     int schussX;
     int schussY;
     int anzahlSchuesse=0;
+    int anzahlAliens=0;
     bool darfschiessen=true;
 
 protected:
@@ -61,19 +73,24 @@ private:
     int schusszaehler;
 };
 
-spiel::spiel()
-{
-
-}
-
-spiel::~spiel()
-{
-    //dtor
-}
 
 spiel::normalerunde()
 {
+        int spaltealien=0;
+        int reihealien=1;
+        anzahlAliens=20;
+        for (int i=0;i<anzahlAliens;i++)
+        {
+           spaltealien++;
 
+           if (spaltealien>10)
+           {    spaltealien=1;
+                reihealien++;   }                               ///Aliens hinzufügen
+
+        Alien[i].x=spaltealien*40;
+        Alien[i].y=reihealien*40;
+
+        }
 }
 
 spiel::tastatureingaben()
@@ -91,7 +108,7 @@ spiel::tastatureingaben()
     if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)' ')) && (darfschiessen==true))
     {
     anzahlSchuesse++;
-    Schuss[anzahlSchuesse-1].x=spielerX+9;      ///Schuss positionieren
+    Schuss[anzahlSchuesse-1].x=spielerX+12;      ///Schuss positionieren
     Schuss[anzahlSchuesse-1].y=spielerY-8;
 
     darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
@@ -256,6 +273,8 @@ bool MyApp::OnInit()
     bHintergrund.LoadFile("Hintergrund.png",wxBITMAP_TYPE_PNG);
     bRaumschiff.LoadFile("Raumschiff.png",wxBITMAP_TYPE_PNG);
     bSchuss.LoadFile("Munition.png",wxBITMAP_TYPE_PNG);
+    bAlienschuss.LoadFile("Alienmunition.png",wxBITMAP_TYPE_PNG);
+    bAlien.LoadFile("Alien.png",wxBITMAP_TYPE_PNG);
 
     //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
 
@@ -268,7 +287,7 @@ bool MyApp::OnInit()
     //frame->SetBackgroundColour(wxColour(0,0,0));
 
 
-
+    Spiel.normalerunde();
     return true;
 }
 
@@ -325,6 +344,13 @@ void BasicDrawPane::render( wxDC& dc )
         for (int i=0;i<Spiel.anzahlSchuesse;i++)
         {
         dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
+        }
+    }
+    if (bAlien.IsOk())
+    {
+        for (int i=0;i<Spiel.anzahlAliens;i++)
+        {
+        dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
         }
     }
 //if (Spiel.anzahlSchuesse>sizeof(schuss))
