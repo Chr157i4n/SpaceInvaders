@@ -175,7 +175,7 @@ spiel::schussloeschen()
 {
   for (int i=0;i<anzahlSchuss;i++)
         {
-          if ((Schuss[i].y<50) || (Schuss[i].y>fensterHoehe))       ///Schuss oben raus
+          if (Schuss[i].y<0)       ///Schuss oben raus
           {
                 for (int c=i;c<anzahlSchuss-1;c++)
                 {
@@ -184,6 +184,20 @@ spiel::schussloeschen()
                 anzahlSchuss=anzahlSchuss-1;
           }
         }
+
+       for (int i=0;i<anzahlAlienSchuss;i++)
+        {
+          if (Alienschuss[i].y>fensterHoehe)       ///Alienschuss unten raus
+          {
+                for (int c=i;c<anzahlAlienSchuss-1;c++)
+                {
+                Alienschuss[c]=Alienschuss[c+1];
+                }
+                anzahlAlienSchuss=anzahlAlienSchuss-1;
+          }
+        }
+
+
 }
 
 spiel::alienBewegen()
