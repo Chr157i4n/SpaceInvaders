@@ -1,7 +1,6 @@
 #include <wx/sizer.h>
 #include <wx/wx.h>
 #include <wx/timer.h>
-
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
@@ -10,7 +9,7 @@
 
 
 
-wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien;
+wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben;
 
 class alienschuss
 {
@@ -79,6 +78,7 @@ class spiel
             alienBewegen();
             trefferregistrieren();
             alienschiessen();
+            endeerkennug();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -102,6 +102,13 @@ private:
 
 spiel::normalerunde()
 {
+
+    anzahlAlienSchuss=0;
+    anzahlAlien=0;
+    anzahlSchuss=0;
+    spielerX=250-16;
+
+
         int spaltealien=0;
         int reihealien=1;
         anzahlAlien=20;
@@ -117,6 +124,8 @@ spiel::normalerunde()
         Alien[i].y=reihealien*40;
 
         }
+
+        leben=3;
 }
 
 spiel::tastatureingaben()
@@ -210,9 +219,10 @@ spiel::alienBewegen()
 
 spiel::trefferregistrieren()
 {
-
+    ///Spieler Schüsse -> Aliens
    for (int i=0;i<anzahlSchuss;i++)
-        for (int c=0;c<anzahlAlien;c++)
+   {
+          for (int c=0;c<anzahlAlien;c++)
         {
             if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
             {
@@ -230,6 +240,31 @@ spiel::trefferregistrieren()
             anzahlAlien--;
             }
         }
+   }
+
+
+        ///Alienschüsse -> Spieler
+        for (int i=0;i<anzahlAlienSchuss;i++)
+        {
+
+
+
+            if ( (Alienschuss[i].x>spielerX) && (Alienschuss[i].x+3<spielerX+25) && (Alienschuss[i].y>spielerY) & (Alienschuss[i].y+9<spielerY+45 ) )
+            {
+
+            for (int d=i;d<anzahlAlienSchuss-1;d++)
+                {
+                Alienschuss[d]=Alienschuss[d+1];
+                }
+            anzahlAlienSchuss--;
+
+            spielerX=250-16;
+            leben--;
+            }
+
+        }
+
+
 }
 
 spiel::alienschiessen()
@@ -248,6 +283,13 @@ spiel::alienschiessen()
     }
 }
 
+spiel::endeerkennug()
+{
+    if (leben<=0)
+    {
+        normalerunde();
+    }
+}
 spiel Spiel;
 
 
@@ -323,6 +365,8 @@ void RenderTimer::Notify()
 
     Spiel.alienschiessen();
 
+    Spiel.endeerkennug();
+
 
     pane->Refresh();
 }
@@ -394,6 +438,7 @@ bool MyApp::OnInit()
     bSchuss.LoadFile("Munition.png",wxBITMAP_TYPE_PNG);
     bAlienschuss.LoadFile("Alienmunition.png",wxBITMAP_TYPE_PNG);
     bAlien.LoadFile("Alien.png",wxBITMAP_TYPE_PNG);
+    bLeben.LoadFile("Leben.png",wxBITMAP_TYPE_PNG);
 
     //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
 
@@ -483,6 +528,14 @@ void BasicDrawPane::render( wxDC& dc )
         {
         dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
         }
+
+        for (int i=1; i<=Spiel.leben;i++)
+        {
+        dc.DrawBitmap(bLeben,i*50-40,430);
+
+        }
+
+
     }
 //if (Spiel.anzahlSchuesse>sizeof(schuss))
 
