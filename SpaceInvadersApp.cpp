@@ -125,7 +125,7 @@ spiel::normalerunde()
 
         }
 
-        leben=3;
+        //leben=3;
 }
 
 spiel::tastatureingaben()
@@ -155,6 +155,7 @@ spiel::tastatureingaben()
     {
         anzahlSchuss=0;
         darfschiessen=true;
+        leben=3;
         normalerunde();                                         //Restart
     }
 
@@ -274,6 +275,21 @@ spiel::trefferregistrieren()
 
             spielerX=250-16;
             leben--;
+
+            ///Schüsse beim Spawnpunkt entfernen
+            for (int f=0;f<anzahlAlienSchuss;f++)
+                {
+                    if ((Alienschuss[f].x>220) && (Alienschuss[f].x<280) && (Alienschuss[f].y>250))
+                    {
+
+                        for (int e=f;e<anzahlAlienSchuss-1;e++)
+                        {
+                        Alienschuss[e]=Alienschuss[e+1];
+                        }
+                        anzahlAlienSchuss--;
+                        f--;
+                    }
+                }
             }
 
         }
@@ -301,8 +317,22 @@ spiel::endeerkennug()
 {
     if (leben<=0)
     {
+                                ///Game Over
         normalerunde();
     }
+
+    if (Alien[anzahlAlien-1].y>=380)
+    {
+        leben=0;
+        normalerunde();
+    }
+
+    if (anzahlAlien<=0)
+    {
+        normalerunde();
+    }
+
+
 }
 spiel Spiel;
 
@@ -498,50 +528,54 @@ void BasicDrawPane::paintNow()
 
 void BasicDrawPane::render( wxDC& dc )
 {
+
+
+
+
+    if (Spiel.leben>0)
+    {
+
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
     dc.SetBackground( *wxBLACK_BRUSH );
    //dc.SetBackgroundMode(1);
     dc.Clear();
 
+            if (bHintergrund.IsOk())
+            {
+            dc.DrawBitmap(bHintergrund,0,0);
+
+            }
+
+            if (bSchuss.IsOk())
+            {
+                for (int i=0;i<Spiel.anzahlSchuss;i++)
+                {
+                dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
+                }
+            }
+
+            if (bSchuss.IsOk())
+            {
+                    for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+                    {
+                    dc.DrawBitmap(bAlienschuss,Alienschuss[i].x,Alienschuss[i].y);
+                    }
+            }
 
 
-
-    if (bHintergrund.IsOk())
-    {
-    dc.DrawBitmap(bHintergrund,0,0);
-
-    }
-
-    if (bSchuss.IsOk())
-    {
-        for (int i=0;i<Spiel.anzahlSchuss;i++)
-        {
-        dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
-        }
-    }
-
-    if (bSchuss.IsOk())
-    {
-        for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
-        {
-        dc.DrawBitmap(bAlienschuss,Alienschuss[i].x,Alienschuss[i].y);
-        }
-    }
+            if (bRaumschiff.IsOk())
+            {
+            dc.DrawBitmap(bRaumschiff,Spiel.spielerX,Spiel.spielerY);
+            }
 
 
-    if (bRaumschiff.IsOk())
-    {
-    dc.DrawBitmap(bRaumschiff,Spiel.spielerX,Spiel.spielerY);
-    }
-
-
-    if (bAlien.IsOk())
-    {
-        for (int i=0;i<Spiel.anzahlAlien;i++)
-        {
-        dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
-        }
+            if (bAlien.IsOk())
+            {
+                for (int i=0;i<Spiel.anzahlAlien;i++)
+                {
+                dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
+                }
 
         for (int i=1; i<=Spiel.leben;i++)
         {
@@ -549,9 +583,19 @@ void BasicDrawPane::render( wxDC& dc )
 
         }
 
+            }
+
 
     }
-//if (Spiel.anzahlSchuesse>sizeof(schuss))
+ if (Spiel.leben<=0)
+ {
+    dc.SetTextForeground( *wxRED );
+    dc.SetFont(wxFontInfo(28).FaceName("Distant Galaxy").Light());
+    dc.DrawText(wxT("Du hast Verloren"), 50, 200);
+    dc.SetFont(wxFontInfo(15).FaceName("Distant Galaxy").Light());
+    dc.DrawText(wxT("Neustart mit R"), 150, 250);
+
+ }
 
 
 
