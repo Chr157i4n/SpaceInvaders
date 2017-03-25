@@ -5,7 +5,7 @@
 #include <iostream>
 #include <ctime>
 #include <wx/icon.h>
-
+#include <wx/dcbuffer.h>
 
 
 
@@ -164,7 +164,7 @@ spiel::schiessenerlauben()
 {
     schusszaehler++;
 
-    if (schusszaehler>50)
+    if (schusszaehler>40)
     {
     darfschiessen=true;
     schusszaehler=0;
@@ -387,7 +387,7 @@ void RenderTimer::Notify()
 
 void RenderTimer::start()
 {
-    wxTimer::Start(16);
+    wxTimer::Start(15);
 }
 
 IMPLEMENT_APP(MyApp)
@@ -485,20 +485,20 @@ wxPanel(parent)
 void BasicDrawPane::paintEvent(wxPaintEvent& evt)
 {
 
-    wxPaintDC dc(this);
+    wxBufferedPaintDC dc(this);
     render(dc);
 }
 
 void BasicDrawPane::paintNow()
 {
 
-    wxPaintDC dc(this);
+    wxBufferedPaintDC dc(this);
     render(dc);
 }
 
 void BasicDrawPane::render( wxDC& dc )
 {
-   // SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
     dc.SetBackground( *wxBLACK_BRUSH );
    //dc.SetBackgroundMode(1);

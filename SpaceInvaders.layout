@@ -4,7 +4,7 @@
 	<ActiveTarget name="Debug" />
 	<File name="SpaceInvadersApp.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3333" topLine="77" />
+			<Cursor1 position="3186" topLine="30" />
 		</Cursor>
 		<Folding>
 			<Collapse line="14" />
@@ -12,7 +12,24 @@
 			<Collapse line="50" />
 			<Collapse line="68" />
 			<Collapse line="103" />
+			<Collapse line="131" />
+			<Collapse line="174" />
 			<Collapse line="203" />
+			<Collapse line="234" />
+			<Collapse line="284" />
+			<Collapse line="300" />
+			<Collapse line="312" />
+			<Collapse line="326" />
+			<Collapse line="341" />
+			<Collapse line="352" />
+			<Collapse line="357" />
+			<Collapse line="388" />
+			<Collapse line="395" />
+			<Collapse line="444" />
+			<Collapse line="480" />
+			<Collapse line="485" />
+			<Collapse line="492" />
+			<Collapse line="499" />
 		</Folding>
 	</File>
 </CodeBlocks_layout_file>
