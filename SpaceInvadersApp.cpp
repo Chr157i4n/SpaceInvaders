@@ -18,6 +18,7 @@ class alien
         int x;
         int y;
         schiessen();
+
     protected:
 
     private:
@@ -26,6 +27,9 @@ alien::schiessen()
 {
 
 }
+
+
+
 
 alien Alien[20];
 
@@ -36,10 +40,18 @@ class schuss
         virtual ~schuss(){};
         int x;
         int y;
+        bewegen();
+
+
     protected:
 
     private:
 };
+
+schuss::bewegen()
+{
+    y=y-2;
+}
 
 
 
@@ -56,6 +68,7 @@ class spiel
             schussbewegen();
             schiessenerlauben();
             schussloeschen();
+            alienBewegen();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -65,6 +78,7 @@ class spiel
     int anzahlSchuesse=0;
     int anzahlAliens=0;
     bool darfschiessen=true;
+    bool aliensbewegensichnachrechts=true;
 
 protected:
 
@@ -118,13 +132,7 @@ spiel::tastatureingaben()
 
 }
 
-spiel::schussbewegen()
-{
-    for (int i=0;i<anzahlSchuesse;i++)
-        {
-        Schuss[i].y=Schuss[i].y-2;
-        }
-}
+
 
 spiel::schiessenerlauben()
 {
@@ -151,6 +159,38 @@ spiel::schussloeschen()
           }
         }
 }
+
+spiel::alienBewegen()
+{
+    for (int i=0; i<anzahlAliens;i++)
+    {
+
+        ///Aliens bewegen
+      if (aliensbewegensichnachrechts)  Alien[i].x++;
+      if (!aliensbewegensichnachrechts)  Alien[i].x--;
+
+
+        ///Richtung wechseln und eine Reihe nach unten
+      if ((Alien[i].x>fensterBreite-50) && (aliensbewegensichnachrechts))
+      {
+          aliensbewegensichnachrechts=false;
+            for (int c=0;c<anzahlAliens;c++)
+                {
+                Alien[c].y=Alien[c].y+20;
+                }
+      }
+      if ((Alien[i].x<2) && (!aliensbewegensichnachrechts))
+        {
+            aliensbewegensichnachrechts=true;
+            for (int c=0;c<anzahlAliens;c++)
+                {
+                Alien[c].y=Alien[c].y+20;
+                }
+        }
+    }
+
+}
+
 
 spiel Spiel;
 
@@ -206,8 +246,21 @@ void RenderTimer::Notify()
 {
     Spiel.schiessenerlauben();
     Spiel.tastatureingaben();
-    Spiel.schussbewegen();
-    Spiel.schussloeschen();
+
+    for (int i=0; i<Spiel.anzahlSchuesse;i++)
+    {
+        Schuss[i].bewegen();
+        Spiel.schussloeschen();
+    }
+
+
+    Spiel.alienBewegen();
+    for (int i=0; i<Spiel.anzahlAliens;i++)
+    {
+        Alien[i].schiessen();
+    }
+
+
     pane->Refresh();
 }
 
