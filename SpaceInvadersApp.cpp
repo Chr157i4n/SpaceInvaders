@@ -13,9 +13,55 @@
 #include <stdio.h>
 #include <wx/textdlg.h>
 
-#include <wx/dialog.h>
+#include <wininet.h>
+#include <process.h>
+#include <iostream>
+#include <fstream>
+#include<conio.h>
+#pragma comment(lib, "Wininet.lib")
+#pragma comment(lib, "ws2_32")
+//#pragma comment(lib, "libwininet.a")
+
+
+
+class BasicDrawPane;
+
+class RenderTimer : public wxTimer
+{
+
+
+
+
+    BasicDrawPane* pane;
+public:
+    RenderTimer(BasicDrawPane* pane);
+    void Notify();
+    void start();
+    void stop();
+};
+
+
+RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
+{
+    RenderTimer::pane = pane;
+}
+void RenderTimer::start()
+{
+    wxTimer::Start(15);
+}
+
+void RenderTimer::stop()
+{
+    wxTimer::Stop();
+}
+RenderTimer* timer;
+
+
+
+
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
+
 
 class explosion
 {
@@ -60,11 +106,11 @@ class alien
     private:
 };
 
-
-
-
-
 alien Alien[20];
+
+
+
+
 
 class schuss
 {
@@ -82,6 +128,9 @@ class schuss
 };
 
 schuss Schuss[10];
+
+
+
 
 
 class spiel
@@ -116,7 +165,6 @@ class spiel
     int punkte=0;
     bool spiellaeuft=true;
     wxString name="";
-    bool menu=true;
 
 protected:
 
@@ -178,7 +226,7 @@ spiel::tastatureingaben()
 
     }
 
-     if ((wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R')) && menu==true )
+     if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
     {
         spiellaeuft=true;
         punkte=0;
@@ -190,6 +238,9 @@ spiel::tastatureingaben()
 
     if (wxGetKeyState((wxKeyCode)'h') || wxGetKeyState((wxKeyCode)'H'))
     {
+
+        timer->stop();
+
         wxString tmp;
         _mkdir("Highscore");
         wxTextFile file( wxT("Highscore/Highscore.txt") );
@@ -200,23 +251,23 @@ spiel::tastatureingaben()
         {
           tmp=tmp+" \n "+file.GetNextLine();
         }
-        if (menu==true)
-        {
-         menu=false;
+
         wxMessageBox( tmp,"Highscore" ,wxICON_INFORMATION);
-        menu=true;
-        }
+
+
         file.Close();
+        timer->start();
     }
 
     if (wxGetKeyState(WXK_F1))
     {
-        if (menu==true)
-        {
-        menu=false;
+
+        timer->stop();
+
         wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
-        menu=true;
-        }
+
+        timer->start();
+
     }
 
 
@@ -392,18 +443,22 @@ spiel::endeerkennug()
 {
     if (leben<=0 && spiellaeuft)
     {
+         timer->stop();
         spiellaeuft=false;
         highscore();
-        punkte=0;                       ///Game Over
+        punkte=0;
+        timer->start();                      ///Game Over
         normalerunde();
     }
 
     if (Alien[anzahlAlien-1].y>=360 && spiellaeuft)
     {
+        timer->stop();
         spiellaeuft=false;
         leben=0;
         highscore();
         punkte=0;
+         timer->start();
         normalerunde();
     }
 
@@ -464,7 +519,7 @@ spiel::highscore()
         if ((punkte>wxAtoi(highscore) || highscore=="")    && punkte>0)
             {
 
-            menu=false;
+
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
                 if ( dlg->ShowModal() == wxID_OK )
                 {
@@ -491,7 +546,7 @@ spiel::highscore()
                 }
 
             dlg->Destroy();
-            menu=true;
+
             punkte=0;
             break;
             }
@@ -515,7 +570,7 @@ spiel::highscore()
 
     if (platz<10 && punkte>0)
     {
-        menu=false;
+
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
                 if ( dlg->ShowModal() == wxID_OK )
                 {
@@ -535,7 +590,7 @@ spiel::highscore()
             file.Write();
                 }
                 dlg->Destroy();
-                menu=true;
+
 
 
     }
@@ -556,20 +611,6 @@ for(int i=10;i<file.GetLineCount();i++)
 spiel Spiel;
 
 
-class BasicDrawPane;
-
-class RenderTimer : public wxTimer
-{
-
-
-
-
-    BasicDrawPane* pane;
-public:
-    RenderTimer(BasicDrawPane* pane);
-    void Notify();
-    void start();
-};
 
 
 class BasicDrawPane : public wxPanel
@@ -592,16 +633,13 @@ class MyApp: public wxApp
 
     bool OnInit();
 
+
     MyFrame* frame;
 public:
 
 };
 
 
-RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
-{
-    RenderTimer::pane = pane;
-}
 
 void RenderTimer::Notify()
 {
@@ -635,16 +673,13 @@ void RenderTimer::Notify()
     pane->Refresh();
 }
 
-void RenderTimer::start()
-{
-    wxTimer::Start(15);
-}
+
 
 IMPLEMENT_APP(MyApp)
 
 class MyFrame : public wxFrame
 {
-    RenderTimer* timer;
+
     BasicDrawPane* drawPane;
 
 public:
@@ -693,6 +728,12 @@ END_EVENT_TABLE()
 
 bool MyApp::OnInit()
 {
+
+
+
+    ///Highscore runterladen - vergleichen - hochladen
+
+
     std::srand(std::time(0));   //Zufallszahlen generieren
 
 
@@ -723,6 +764,7 @@ bool MyApp::OnInit()
     Spiel.normalerunde();
     return true;
 }
+
 
 
 BEGIN_EVENT_TABLE(BasicDrawPane, wxPanel)
