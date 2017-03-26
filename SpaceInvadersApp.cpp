@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <wx/textdlg.h>
 
+#include <wx/dialog.h>
+
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
 
 class explosion
@@ -154,18 +156,18 @@ spiel::normalerunde()
 
 spiel::tastatureingaben()
 {
-    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A')) && (spielerX-5>=0) )
+    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (spielerX-5>=0) )
     {
         spielerX=spielerX-2;
 
     }
 
-    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D')) && (spielerX+48<=fensterBreite))
+    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (spielerX+48<=fensterBreite))
     {
         spielerX=spielerX+2;
     }
 
-    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)' ')) && (darfschiessen==true))
+    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (darfschiessen==true))
     {
     anzahlSchuss++;
     Schuss[anzahlSchuss-1].x=spielerX+12;      ///Schuss positionieren
@@ -176,7 +178,7 @@ spiel::tastatureingaben()
 
     }
 
-     if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
+     if ((wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R')) && menu==true )
     {
         spiellaeuft=true;
         punkte=0;
@@ -189,7 +191,9 @@ spiel::tastatureingaben()
     if (wxGetKeyState((wxKeyCode)'h') || wxGetKeyState((wxKeyCode)'H'))
     {
         wxString tmp;
+        _mkdir("Highscore");
         wxTextFile file( wxT("Highscore/Highscore.txt") );
+        file.Create("Highscore/Highscore.txt");
         file.Open();
         tmp=file.GetFirstLine();
         while (!file.Eof())
@@ -204,6 +208,17 @@ spiel::tastatureingaben()
         }
         file.Close();
     }
+
+    if (wxGetKeyState(WXK_F1))
+    {
+        if (menu==true)
+        {
+        menu=false;
+        wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
+        menu=true;
+        }
+    }
+
 
 }
 
@@ -304,8 +319,8 @@ spiel::trefferregistrieren()
                 Alien[d]=Alien[d+1];
                 }
             anzahlAlien--;
-
-            punkte=punkte+10;               ///Punkte hinzufügen
+            if (spiellaeuft)
+            {punkte=punkte+10;}               ///Punkte hinzufügen
 
 
             }
@@ -322,10 +337,10 @@ spiel::trefferregistrieren()
             if ( (Alienschuss[i].x>spielerX) && (Alienschuss[i].x+3<spielerX+25) && (Alienschuss[i].y>spielerY) & (Alienschuss[i].y+9<spielerY+45 ) )
             {
 
-            Explosion[anzahlExplosion].x=spielerX;
-            Explosion[anzahlExplosion].y=spielerY;
-            Explosion[anzahlExplosion].laufzeit=0;
-            anzahlExplosion++;
+            //Explosion[anzahlExplosion].x=spielerX;        ///Explosionen an der alten Position des Spielers
+            //Explosion[anzahlExplosion].y=spielerY;        ///Spieler müsste erst nach verschwinden der Explosion
+            //Explosion[anzahlExplosion].laufzeit=0;        //wieder erscheinen
+            //anzahlExplosion++;
 
             for (int d=i;d<anzahlAlienSchuss-1;d++)
                 {
@@ -449,27 +464,37 @@ spiel::highscore()
         if ((punkte>wxAtoi(highscore) || highscore=="")    && punkte>0)
             {
 
+            menu=false;
+            wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
+                if ( dlg->ShowModal() == wxID_OK )
+                {
+                    dlg->Destroy();
+                    wxString punktstand;
+                    punktstand << punkte;
 
 
 
+                        if (punkte<100)
+                        {
+                        punktstand=punktstand+" ";
+                        }
+                        if (punkte<1000)
+                        {
+                        punktstand=punktstand+" ";
+                        }
+                    punktstand=punktstand+"   "+dlg->GetValue();
+                    file.InsertLine( punktstand, platz);
+                    file.Write();
 
 
 
-            wxString punktstand;
-            punktstand << punkte;
-            if (punkte<100)
-            {
-            punktstand=punktstand+" ";
+                }
+
+            dlg->Destroy();
+            menu=true;
+            punkte=0;
+            break;
             }
-            if (punkte<1000)
-            {
-            punktstand=punktstand+" ";
-            }
-            punktstand=punktstand+"   Christian";
-            file.InsertLine( punktstand, platz);
-            file.Write();
-            punkte=-1;
-            break;            }
         highscore="";
         tmp = file.GetNextLine();
         for (int i=0; i<10; i++)
@@ -490,6 +515,11 @@ spiel::highscore()
 
     if (platz<10 && punkte>0)
     {
+        menu=false;
+            wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
+                if ( dlg->ShowModal() == wxID_OK )
+                {
+                    dlg->Destroy();
      wxString punktstand;
             punktstand << punkte;                   ///Punktzahl ganz am ende
             if (punkte<100)
@@ -500,10 +530,16 @@ spiel::highscore()
             {
             punktstand=punktstand+" ";
             }
-            punktstand=punktstand+"   Christian";
+             punktstand=punktstand+"   "+dlg->GetValue();
             file.InsertLine( punktstand, platz);
+            file.Write();
+                }
+                dlg->Destroy();
+                menu=true;
+
 
     }
+
 
 
 for(int i=10;i<file.GetLineCount();i++)

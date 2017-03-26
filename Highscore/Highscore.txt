@@ -1,5 +1,2 @@
-210    Christian
-130    Christian
+150    Christian
 50     Christian
-30     Christian
-20     Christian
