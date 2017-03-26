@@ -8,7 +8,10 @@
 #include <wx/dcbuffer.h>
 #include <string>
 #include <sstream>
-
+#include <wx/textfile.h>
+#include <windows.h>
+#include <stdio.h>
+#include <wx/textdlg.h>
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
 
@@ -94,6 +97,7 @@ class spiel
             alienschiessen();
             endeerkennug();
             explosionenentfernen();
+            highscore();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
@@ -108,6 +112,9 @@ class spiel
     bool aliensbewegensichnachrechts=true;
     int leben=3;
     int punkte=0;
+    bool spiellaeuft=true;
+    wxString name="";
+    bool menu=true;
 
 protected:
 
@@ -150,6 +157,7 @@ spiel::tastatureingaben()
     if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A')) && (spielerX-5>=0) )
     {
         spielerX=spielerX-2;
+
     }
 
     if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D')) && (spielerX+48<=fensterBreite))
@@ -170,11 +178,31 @@ spiel::tastatureingaben()
 
      if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
     {
+        spiellaeuft=true;
         punkte=0;
         anzahlSchuss=0;
         darfschiessen=true;
         leben=3;
         normalerunde();                                         //Restart
+    }
+
+    if (wxGetKeyState((wxKeyCode)'h') || wxGetKeyState((wxKeyCode)'H'))
+    {
+        wxString tmp;
+        wxTextFile file( wxT("Highscore/Highscore.txt") );
+        file.Open();
+        tmp=file.GetFirstLine();
+        while (!file.Eof())
+        {
+          tmp=tmp+" \n "+file.GetNextLine();
+        }
+        if (menu==true)
+        {
+         menu=false;
+        wxMessageBox( tmp,"Highscore" ,wxICON_INFORMATION);
+        menu=true;
+        }
+        file.Close();
     }
 
 }
@@ -347,16 +375,20 @@ spiel::alienschiessen()
 
 spiel::endeerkennug()
 {
-    if (leben<=0)
+    if (leben<=0 && spiellaeuft)
     {
-        punkte=0;                        ///Game Over
+        spiellaeuft=false;
+        highscore();
+        punkte=0;                       ///Game Over
         normalerunde();
     }
 
-    if (Alien[anzahlAlien-1].y>=360)
+    if (Alien[anzahlAlien-1].y>=360 && spiellaeuft)
     {
-        punkte=0;
+        spiellaeuft=false;
         leben=0;
+        highscore();
+        punkte=0;
         normalerunde();
     }
 
@@ -386,6 +418,104 @@ spiel::explosionenentfernen()
 
     }
 }
+
+spiel::highscore()
+{
+    _mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
+    wxTextFile file( wxT("Highscore/Highscore.txt") );
+    file.Create("Highscore/Highscore.txt");             ///erstellt nur, falls nicht vorhanden
+    file.Open("Highscore/Highscore.txt");
+    int platz=0;
+    wxString highscore,tmp;
+
+    tmp = file.GetFirstLine();
+
+    for (int i=0; i<10; i++)
+    {
+        if (tmp[i] == ' ')
+        {
+          for (int c=0;c<i;c++)
+          {
+             highscore=highscore+tmp[c];
+          }
+          break;
+        }
+    }
+
+
+    do {
+
+
+        if ((punkte>wxAtoi(highscore) || highscore=="")    && punkte>0)
+            {
+
+
+
+
+
+
+
+            wxString punktstand;
+            punktstand << punkte;
+            if (punkte<100)
+            {
+            punktstand=punktstand+" ";
+            }
+            if (punkte<1000)
+            {
+            punktstand=punktstand+" ";
+            }
+            punktstand=punktstand+"   Christian";
+            file.InsertLine( punktstand, platz);
+            file.Write();
+            punkte=-1;
+            break;            }
+        highscore="";
+        tmp = file.GetNextLine();
+        for (int i=0; i<10; i++)
+    {
+
+        if (tmp[i] == ' ')
+        {
+          for (int c=0;c<i;c++)
+          {
+             highscore=highscore+tmp[c];
+          }
+          break;
+        }
+    }
+        platz++;
+
+    } while(!file.Eof() && platz<10);
+
+    if (platz<10 && punkte>0)
+    {
+     wxString punktstand;
+            punktstand << punkte;                   ///Punktzahl ganz am ende
+            if (punkte<100)
+            {
+            punktstand=punktstand+" ";
+            }
+            if (punkte<1000)
+            {
+            punktstand=punktstand+" ";
+            }
+            punktstand=punktstand+"   Christian";
+            file.InsertLine( punktstand, platz);
+
+    }
+
+
+for(int i=10;i<file.GetLineCount();i++)
+{
+    file.RemoveLine(i);
+}
+
+
+    file.Write();
+    file.Close();
+}
+
 
 spiel Spiel;
 
@@ -528,6 +658,10 @@ END_EVENT_TABLE()
 bool MyApp::OnInit()
 {
     std::srand(std::time(0));   //Zufallszahlen generieren
+
+
+
+
 
     ///Bilder Laden
     wxInitAllImageHandlers();
