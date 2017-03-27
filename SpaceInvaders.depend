@@ -2678,7 +2678,7 @@
 
 1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\msw\rcdefs.h
 
-1490540865 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
+1490636894 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
 	<wx/sizer.h>
 	<wx/wx.h>
 	<wx/timer.h>
@@ -2693,7 +2693,6 @@
 	<windows.h>
 	<stdio.h>
 	<wx/textdlg.h>
-	<wx/dialog.h>
 
 1490364698 c:\users\christian\git\spaceinvaders\spiel.h
 
@@ -2714,4 +2713,38 @@
 	"wx/convauto.h"
 	"wx/string.h"
 	"wx/dynarray.h"
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\curl.h
+	"curlver.h"
+	"curlbuild.h"
+	"curlrules.h"
+	<stdio.h>
+	<limits.h>
+	<osreldate.h>
+	<sys/types.h>
+	<time.h>
+	<winsock2.h>
+	<ws2tcpip.h>
+	<sys/select.h>
+	<sys/socket.h>
+	<sys/time.h>
+	<support/SupportDefs.h>
+	"easy.h"
+	"multi.h"
+	"typecheck-gcc.h"
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\curlver.h
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\curlbuild.h
+	<sys/types.h>
+	<sys/socket.h>
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\curlrules.h
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\easy.h
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\multi.h
+	"curl.h"
+
+1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\typecheck-gcc.h
 

@@ -13,14 +13,10 @@
 #include <stdio.h>
 #include <wx/textdlg.h>
 
-#include <wininet.h>
-#include <process.h>
-#include <iostream>
-#include <fstream>
-#include<conio.h>
-#pragma comment(lib, "Wininet.lib")
-#pragma comment(lib, "ws2_32")
-//#pragma comment(lib, "libwininet.a")
+//#include <tchar.h>
+//#include <urlmon.h>
+//#pragma comment(lib, "urlmon.lib")
+
 
 
 
@@ -106,7 +102,7 @@ class alien
     private:
 };
 
-alien Alien[20];
+alien Alien[30];
 
 
 
@@ -243,19 +239,35 @@ spiel::tastatureingaben()
 
         wxString tmp;
         _mkdir("Highscore");
-        wxTextFile file( wxT("Highscore/Highscore.txt") );
-        file.Create("Highscore/Highscore.txt");
-        file.Open();
-        tmp=file.GetFirstLine();
-        while (!file.Eof())
+
+        wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
+        highscoreTXT.Create("Highscore/Highscore.txt");
+        highscoreTXT.Open();
+
+        wxTextFile highscoreTXTOnline( wxT("Highscore/HighscoreOnline.txt") );
+        highscoreTXTOnline.Create("Highscore/HighscoreOnline.txt");
+        highscoreTXTOnline.Open();
+
+        tmp="Lokaler Highscore: \n";
+        tmp=tmp+highscoreTXT.GetFirstLine();
+        while (!highscoreTXT.Eof())
         {
-          tmp=tmp+" \n "+file.GetNextLine();
+          tmp=tmp+" \n "+highscoreTXT.GetNextLine();
         }
+        tmp=tmp+"\n";
+
+        tmp=tmp+"Globaler Highscore: \n";
+        tmp=tmp+highscoreTXTOnline.GetFirstLine();
+        while (!highscoreTXTOnline.Eof())
+        {
+          tmp=tmp+" \n "+highscoreTXTOnline.GetNextLine();
+        }
+
 
         wxMessageBox( tmp,"Highscore" ,wxICON_INFORMATION);
 
 
-        file.Close();
+        highscoreTXT.Close();
         timer->start();
     }
 
@@ -491,14 +503,21 @@ spiel::explosionenentfernen()
 
 spiel::highscore()
 {
+    bool hso=false,hs=false;
     _mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
-    wxTextFile file( wxT("Highscore/Highscore.txt") );
-    file.Create("Highscore/Highscore.txt");             ///erstellt nur, falls nicht vorhanden
-    file.Open("Highscore/Highscore.txt");
+    wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
+
+    highscoreTXT.Create("Highscore/Highscore.txt");             ///erstellt nur, falls nicht vorhanden
+    highscoreTXT.Open("Highscore/Highscore.txt");
+
+
+
+
+    ///Highscore
     int platz=0;
     wxString highscore,tmp;
 
-    tmp = file.GetFirstLine();
+    tmp = highscoreTXT.GetFirstLine();
 
     for (int i=0; i<10; i++)
     {
@@ -516,7 +535,7 @@ spiel::highscore()
     do {
 
 
-        if ((punkte>wxAtoi(highscore) || highscore=="")    && punkte>0)
+        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hs)
             {
 
 
@@ -537,21 +556,22 @@ spiel::highscore()
                         {
                         punktstand=punktstand+" ";
                         }
-                    punktstand=punktstand+"   "+dlg->GetValue();
-                    file.InsertLine( punktstand, platz);
-                    file.Write();
-
+                        name=dlg->GetValue();
+                    punktstand=punktstand+"   "+name;
+                    highscoreTXT.InsertLine( punktstand, platz);
+                    highscoreTXT.Write();
+                    hs=true;
 
 
                 }
 
             dlg->Destroy();
 
-            punkte=0;
+
             break;
             }
         highscore="";
-        tmp = file.GetNextLine();
+        tmp = highscoreTXT.GetNextLine();
         for (int i=0; i<10; i++)
     {
 
@@ -566,16 +586,16 @@ spiel::highscore()
     }
         platz++;
 
-    } while(!file.Eof() && platz<10);
+    } while(!highscoreTXT.Eof() && platz<10);
 
-    if (platz<10 && punkte>0)
+    if (platz<10 && !hs)
     {
 
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
                 if ( dlg->ShowModal() == wxID_OK )
                 {
                     dlg->Destroy();
-     wxString punktstand;
+            wxString punktstand;
             punktstand << punkte;                   ///Punktzahl ganz am ende
             if (punkte<100)
             {
@@ -585,9 +605,10 @@ spiel::highscore()
             {
             punktstand=punktstand+" ";
             }
-             punktstand=punktstand+"   "+dlg->GetValue();
-            file.InsertLine( punktstand, platz);
-            file.Write();
+            name=dlg->GetValue();
+             punktstand=punktstand+"   "+name;
+            highscoreTXT.InsertLine( punktstand, platz);
+            highscoreTXT.Write();
                 }
                 dlg->Destroy();
 
@@ -597,14 +618,142 @@ spiel::highscore()
 
 
 
-for(int i=10;i<file.GetLineCount();i++)
+for(int i=10;i<highscoreTXT.GetLineCount();i++)
 {
-    file.RemoveLine(i);
+    highscoreTXT.RemoveLine(i);
 }
 
 
-    file.Write();
-    file.Close();
+    highscoreTXT.Write();
+    highscoreTXT.Close();
+
+
+
+
+
+
+
+    ///Highscore Online
+
+
+    wxTextFile highscoreTXTOnline( wxT("Highscore/HighscoreOnline.txt") );
+    highscoreTXTOnline.Create("Highscore/HighscoreOnline.txt");
+    highscoreTXTOnline.Open("Highscore/HighscoreOnline.txt");
+
+
+
+    ///Zeilen wieder formatieren
+
+
+
+
+
+    platz=0;
+    highscore="",tmp="";
+
+    tmp = highscoreTXTOnline.GetFirstLine();
+
+    for (int i=0; i<10; i++)
+    {
+        if (tmp[i] == ' ')
+        {
+          for (int c=0;c<i;c++)
+          {
+             highscore=highscore+tmp[c];
+          }
+          break;
+        }
+    }
+
+
+    do {
+
+
+        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hso)
+            {
+
+
+
+                    wxString punktstand;
+                    punktstand << punkte;
+
+
+
+                        if (punkte<100)
+                        {
+                        punktstand=punktstand+" ";
+                        }
+                        if (punkte<1000)
+                        {
+                        punktstand=punktstand+" ";
+                        }
+                    punktstand=punktstand+"   "+name;
+                    highscoreTXTOnline.InsertLine( punktstand, platz);
+                    highscoreTXTOnline.Write();
+                    hso=true;
+
+                    break;
+                }
+
+
+
+
+
+
+        highscore="";
+        tmp = highscoreTXTOnline.GetNextLine();
+        for (int i=0; i<10; i++)
+    {
+
+        if (tmp[i] == ' ')
+        {
+          for (int c=0;c<i;c++)
+          {
+             highscore=highscore+tmp[c];
+          }
+          break;
+        }
+    }
+        platz++;
+
+    } while(!highscoreTXTOnline.Eof() && platz<10);
+
+
+    if (platz<10 && !hso)
+    {
+            wxString punktstand;
+            punktstand << punkte;                   ///Punktzahl ganz am ende
+            if (punkte<100)
+            {
+            punktstand=punktstand+" ";
+            }
+            if (punkte<1000)
+            {
+            punktstand=punktstand+" ";
+            }
+             punktstand=punktstand+"   "+name;
+            highscoreTXTOnline.InsertLine( punktstand, platz);
+            highscoreTXTOnline.Write();
+                }
+
+
+
+
+
+
+
+
+for(int i=10;i<highscoreTXTOnline.GetLineCount();i++)
+{
+    highscoreTXTOnline.RemoveLine(i);
+}
+
+
+    highscoreTXTOnline.Write();
+    highscoreTXTOnline.Close();
+
+
+
 }
 
 
@@ -732,6 +881,14 @@ bool MyApp::OnInit()
 
 
     ///Highscore runterladen - vergleichen - hochladen
+
+
+
+
+//    HRESULT hr = URLDownloadToFile ( NULL, _T("http://staacraft.square7.ch/Downloads/Highscore.txt"), _T("Highscore\\HighscoreOnline.txt"), 0, NULL );
+
+
+
 
 
     std::srand(std::time(0));   //Zufallszahlen generieren
