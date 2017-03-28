@@ -535,7 +535,7 @@ spiel::highscore()
     do {
 
 
-        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hs)
+        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hs && punkte>0)
             {
 
 
@@ -588,7 +588,7 @@ spiel::highscore()
 
     } while(!highscoreTXT.Eof() && platz<10);
 
-    if (platz<10 && !hs)
+    if (platz<10 && !hs && punkte>0)
     {
 
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
@@ -669,7 +669,7 @@ for(int i=10;i<highscoreTXT.GetLineCount();i++)
     do {
 
 
-        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hso)
+        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hso && punkte>0)
             {
 
 
@@ -719,7 +719,7 @@ for(int i=10;i<highscoreTXT.GetLineCount();i++)
     } while(!highscoreTXTOnline.Eof() && platz<10);
 
 
-    if (platz<10 && !hso)
+    if (platz<10 && !hso && punkte>0)
     {
             wxString punktstand;
             punktstand << punkte;                   ///Punktzahl ganz am ende
