@@ -2747,3 +2747,26 @@
 
 1490565893 c:\wxwidgets-3.1.0\curl\curl-7.46.0-win64\include\curl\typecheck-gcc.h
 
+1490315163 source:c:\users\christian\desktop\threads\wx_pch.h
+	<wx/wxprec.h>
+	<wx/wx.h>
+
+1490459548 source:c:\users\christian\desktop\threads\resource.rc
+	"wx/msw/wx.rc"
+
+1490820909 source:c:\users\christian\desktop\threads\spaceinvadersapp.cpp
+	<wx/sizer.h>
+	<wx/wx.h>
+	<wx/timer.h>
+	<cstdlib>
+	<ctime>
+	<wx/icon.h>
+	<wx/dcbuffer.h>
+	<string>
+	<sstream>
+	<wx/textfile.h>
+	<windows.h>
+	<stdio.h>
+	<wx/textdlg.h>
+	<thread>
+

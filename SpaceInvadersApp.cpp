@@ -12,19 +12,20 @@
 #include <windows.h>
 #include <stdio.h>
 #include <wx/textdlg.h>
-
+#include <thread>
 
 
 
 class BasicDrawPane;
 
+
 class RenderTimer : public wxTimer
 {
+BasicDrawPane* pane;
 
 
 
 
-    BasicDrawPane* pane;
 public:
     RenderTimer(BasicDrawPane* pane);
     void Notify();
@@ -35,7 +36,7 @@ public:
 
 RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 {
-    RenderTimer::pane = pane;
+   RenderTimer::pane = pane;
 }
 void RenderTimer::start()
 {
@@ -157,12 +158,8 @@ class spiel
     bool spiellaeuft=true;
     wxString name="";
     HWND fensterImVordergrund;
-
-protected:
-
-private:
-    int fensterHoehe=500, fensterBreite=500;
     int schusszaehler;
+    int fensterHoehe=500, fensterBreite=500;
 };
 
 
@@ -194,258 +191,9 @@ spiel::normalerunde()
         //leben=3;
 }
 
-spiel::tastatureingaben()
-{
-    if (fensterImVordergrund==GetForegroundWindow())
-    {
-
-    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (spielerX-5>=0) )
-    {
-        spielerX=spielerX-2;
-
-    }
-
-    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (spielerX+48<=fensterBreite))
-    {
-        spielerX=spielerX+2;
-    }
-
-    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (darfschiessen==true))
-    {
-    anzahlSchuss++;
-    Schuss[anzahlSchuss-1].x=spielerX+12;      ///Schuss positionieren
-    Schuss[anzahlSchuss-1].y=spielerY-8;
-
-    darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
-    schusszaehler=0;
-
-    }
-
-
-
-
-    }
-}
-
-spiel::schiessenerlauben()
-{
-    schusszaehler++;
-
-    if (schusszaehler>40)
-    {
-    darfschiessen=true;
-    schusszaehler=0;
-    }
-}
-
-spiel::schussloeschen()
-{
-  for (int i=0;i<anzahlSchuss;i++)
-        {
-          if (Schuss[i].y<0)       ///Schuss oben raus
-          {
-                for (int c=i;c<anzahlSchuss-1;c++)
-                {
-                Schuss[c]=Schuss[c+1];
-                }
-                anzahlSchuss=anzahlSchuss-1;
-          }
-        }
-
-       for (int i=0;i<anzahlAlienSchuss;i++)
-        {
-          if (Alienschuss[i].y>fensterHoehe)       ///Alienschuss unten raus
-          {
-                for (int c=i;c<anzahlAlienSchuss-1;c++)
-                {
-                Alienschuss[c]=Alienschuss[c+1];
-                }
-                anzahlAlienSchuss=anzahlAlienSchuss-1;
-          }
-        }
-
-
-}
-
-spiel::alienBewegen()
-{
-    for (int i=0; i<anzahlAlien;i++)
-    {
-
-        ///Aliens bewegen
-      if (aliensbewegensichnachrechts)  Alien[i].x++;
-      if (!aliensbewegensichnachrechts)  Alien[i].x--;
-
-
-        ///Richtung wechseln und eine Reihe nach unten
-      if ((Alien[i].x>fensterBreite-50) && (aliensbewegensichnachrechts))
-      {
-          aliensbewegensichnachrechts=false;
-            for (int c=0;c<anzahlAlien;c++)
-                {
-                Alien[c].y=Alien[c].y+20;
-                }
-      }
-      if ((Alien[i].x<2) && (!aliensbewegensichnachrechts))
-        {
-            aliensbewegensichnachrechts=true;
-            for (int c=0;c<anzahlAlien;c++)
-                {
-                Alien[c].y=Alien[c].y+20;
-                }
-        }
-    }
-
-}
-
-spiel::trefferregistrieren()
-{
-    ///Spieler Schüsse -> Aliens
-   for (int i=0;i<anzahlSchuss;i++)
-   {
-          for (int c=0;c<anzahlAlien;c++)
-        {
-            if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
-            {               ///Treffer erkennen
-
-            Explosion[anzahlExplosion].x=Alien[c].x;
-            Explosion[anzahlExplosion].y=Alien[c].y;
-            Explosion[anzahlExplosion].laufzeit=0;
-            anzahlExplosion++;
-
-            for (int d=i;d<anzahlSchuss-1;d++)
-                {                                   ///Schuss löschen
-                Schuss[d]=Schuss[d+1];
-                }
-            anzahlSchuss--;
-
-            for (int d=c;d<anzahlAlien-1;d++)       ///Alien löschen
-                {
-                Alien[d]=Alien[d+1];
-                }
-            anzahlAlien--;
-            if (spiellaeuft)
-            {punkte=punkte+10;}               ///Punkte hinzufügen
-
-
-            }
-        }
-   }
-
-
-        ///Alienschüsse -> Spieler
-        for (int i=0;i<anzahlAlienSchuss;i++)
-        {
-
-
-
-            if ( (Alienschuss[i].x>spielerX) && (Alienschuss[i].x+3<spielerX+25) && (Alienschuss[i].y>spielerY) & (Alienschuss[i].y+9<spielerY+45 ) )
-            {
-
-            //Explosion[anzahlExplosion].x=spielerX;        ///Explosionen an der alten Position des Spielers
-            //Explosion[anzahlExplosion].y=spielerY;        ///Spieler müsste erst nach verschwinden der Explosion
-            //Explosion[anzahlExplosion].laufzeit=0;        //wieder erscheinen
-            //anzahlExplosion++;
-
-            for (int d=i;d<anzahlAlienSchuss-1;d++)
-                {
-                Alienschuss[d]=Alienschuss[d+1];
-                }
-            anzahlAlienSchuss--;
-
-            spielerX=250-16;
-            leben--;
-
-            ///Schüsse beim Spawnpunkt entfernen
-            for (int f=0;f<anzahlAlienSchuss;f++)
-                {
-                    if ((Alienschuss[f].x>220) && (Alienschuss[f].x<280) && (Alienschuss[f].y>250))
-                    {
-
-                        for (int e=f;e<anzahlAlienSchuss-1;e++)
-                        {
-                        Alienschuss[e]=Alienschuss[e+1];
-                        }
-                        anzahlAlienSchuss--;
-                        f--;
-                    }
-                }
-            }
-
-        }
-
-
-}
-
-spiel::alienschiessen()
-{
-    for (int i=0;i<anzahlAlien;i++)
-    {
-        int zufall= std::rand()%1000+1;
-
-                if (zufall>995)
-                    {
-                    Alienschuss[anzahlAlienSchuss].x=Alien[i].x+14;
-                    Alienschuss[anzahlAlienSchuss].y=Alien[i].y+30;
-
-                    anzahlAlienSchuss++;
-                    }
-    }
-}
-
-spiel::endeerkennug()
-{
-    if (leben<=0 && spiellaeuft)
-    {
-         timer->stop();
-        spiellaeuft=false;
-        highscore();
-        punkte=0;
-        timer->start();                      ///Game Over
-        normalerunde();
-    }
-
-    if (Alien[anzahlAlien-1].y>=360 && spiellaeuft)
-    {
-        timer->stop();
-        spiellaeuft=false;
-        leben=0;
-        highscore();
-        punkte=0;
-         timer->start();
-        normalerunde();
-    }
-
-    if (anzahlAlien<=0)
-    {
-        normalerunde();
-    }
-
-
-}
-
-spiel::explosionenentfernen()
-{
-    for (int i=0;i<anzahlExplosion;i++)
-    {
-        Explosion[i].laufzeit++;
-
-        if (Explosion[i].laufzeit>25)
-        {
-            for (int c=i;c<anzahlExplosion;c++)
-            {
-            Explosion[c]=Explosion[c+1];
-            }
-            anzahlExplosion--;
-
-        }
-
-    }
-}
-
 spiel::highscore()
 {
-    bool hso=false,hs=false;
+    bool hso=false,hs=false,chanceled=false;
     _mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
     wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
 
@@ -506,6 +254,7 @@ spiel::highscore()
 
 
                 }
+                else {hs=true;chanceled=true;}
 
             dlg->Destroy();
 
@@ -551,7 +300,7 @@ spiel::highscore()
              punktstand=punktstand+"   "+name;
             highscoreTXT.InsertLine( punktstand, platz);
             highscoreTXT.Write();
-                }
+                } else {chanceled=true;}
                 dlg->Destroy();
 
 
@@ -577,7 +326,7 @@ for(int i=10;i<highscoreTXT.GetLineCount();i++)
 
     ///Highscore Online
 
-
+if (!chanceled){
     wxTextFile highscoreTXTOnline( wxT("Highscore/HighscoreOnline.txt") );
     highscoreTXTOnline.Create("Highscore/HighscoreOnline.txt");
     highscoreTXTOnline.Open("Highscore/HighscoreOnline.txt");
@@ -694,13 +443,275 @@ for(int i=10;i<highscoreTXTOnline.GetLineCount();i++)
     highscoreTXTOnline.Write();
     highscoreTXTOnline.Close();
 
+}
+
+}
+
+spiel Spiel;
+
+
+
+
+tastatureingaben()
+{
+    if (Spiel.fensterImVordergrund==GetForegroundWindow())
+    {
+
+    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (Spiel.spielerX-5>=0) )
+    {
+        Spiel.spielerX=Spiel.spielerX-2;
+
+    }
+
+    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (Spiel.spielerX+48<=Spiel.fensterBreite))
+    {
+        Spiel.spielerX=Spiel.spielerX+2;
+    }
+
+    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (Spiel.darfschiessen==true))
+    {
+    Spiel.anzahlSchuss++;
+    Schuss[Spiel.anzahlSchuss-1].x=Spiel.spielerX+12;      ///Schuss positionieren
+    Schuss[Spiel.anzahlSchuss-1].y=Spiel.spielerY-8;
+
+    Spiel.darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
+    Spiel.schusszaehler=0;
+
+    }
+
+
+
+
+    }
+}
+
+schussloeschen()
+{
+  for (int i=0;i<Spiel.anzahlSchuss;i++)
+        {
+          if (Schuss[i].y<0)       ///Schuss oben raus
+          {
+                for (int c=i;c<Spiel.anzahlSchuss-1;c++)
+                {
+                Schuss[c]=Schuss[c+1];
+                }
+                Spiel.anzahlSchuss=Spiel.anzahlSchuss-1;
+          }
+        }
+
+       for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+        {
+          if (Alienschuss[i].y>Spiel.fensterHoehe)       ///Alienschuss unten raus
+          {
+                for (int c=i;c<Spiel.anzahlAlienSchuss-1;c++)
+                {
+                Alienschuss[c]=Alienschuss[c+1];
+                }
+                Spiel.anzahlAlienSchuss--;
+          }
+        }
 
 
 }
 
+alienBewegen()
+{
+    for (int i=0; i<Spiel.anzahlAlien;i++)
+    {
 
-spiel Spiel;
+        ///Aliens bewegen
+      if (Spiel.aliensbewegensichnachrechts)  Alien[i].x++;
+      if (!Spiel.aliensbewegensichnachrechts)  Alien[i].x--;
 
+
+        ///Richtung wechseln und eine Reihe nach unten
+      if ((Alien[i].x>Spiel.fensterBreite-50) && (Spiel.aliensbewegensichnachrechts))
+      {
+          Spiel.aliensbewegensichnachrechts=false;
+            for (int c=0;c<Spiel.anzahlAlien;c++)
+                {
+                Alien[c].y=Alien[c].y+20;
+                }
+      }
+      if ((Alien[i].x<2) && (!Spiel.aliensbewegensichnachrechts))
+        {
+            Spiel.aliensbewegensichnachrechts=true;
+            for (int c=0;c<Spiel.anzahlAlien;c++)
+                {
+                Alien[c].y=Alien[c].y+20;
+                }
+        }
+    }
+
+}
+
+trefferregistrieren()
+{
+    ///Spieler Schüsse -> Aliens
+   for (int i=0;i<Spiel.anzahlSchuss;i++)
+   {
+          for (int c=0;c<Spiel.anzahlAlien;c++)
+        {
+            if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
+            {               ///Treffer erkennen
+
+            Explosion[Spiel.anzahlExplosion].x=Alien[c].x;
+            Explosion[Spiel.anzahlExplosion].y=Alien[c].y;
+            Explosion[Spiel.anzahlExplosion].laufzeit=0;
+            Spiel.anzahlExplosion++;
+
+            for (int d=i;d<Spiel.anzahlSchuss-1;d++)
+                {                                   ///Schuss löschen
+                Schuss[d]=Schuss[d+1];
+                }
+            Spiel.anzahlSchuss--;
+
+            for (int d=c;d<Spiel.anzahlAlien-1;d++)       ///Alien löschen
+                {
+                Alien[d]=Alien[d+1];
+                }
+            Spiel.anzahlAlien--;
+            if (Spiel.spiellaeuft)
+            {Spiel.punkte=Spiel.punkte+10;}               ///Punkte hinzufügen
+
+
+            }
+        }
+   }
+
+
+        ///Alienschüsse -> Spieler
+        for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+        {
+
+
+
+            if ( (Alienschuss[i].x>Spiel.spielerX) && (Alienschuss[i].x+3<Spiel.spielerX+25) && (Alienschuss[i].y>Spiel.spielerY) & (Alienschuss[i].y+9<Spiel.spielerY+45 ) )
+            {
+
+            //Explosion[anzahlExplosion].x=spielerX;        ///Explosionen an der alten Position des Spielers
+            //Explosion[anzahlExplosion].y=spielerY;        ///Spieler müsste erst nach verschwinden der Explosion
+            //Explosion[anzahlExplosion].laufzeit=0;        //wieder erscheinen
+            //anzahlExplosion++;
+
+            for (int d=i;d<Spiel.anzahlAlienSchuss-1;d++)
+                {
+                Alienschuss[d]=Alienschuss[d+1];
+                }
+            Spiel.anzahlAlienSchuss--;
+
+            Spiel.spielerX=250-16;
+            Spiel.leben--;
+
+            ///Schüsse beim Spawnpunkt entfernen
+            for (int f=0;f<Spiel.anzahlAlienSchuss;f++)
+                {
+                    if ((Alienschuss[f].x>220) && (Alienschuss[f].x<280) && (Alienschuss[f].y>250))
+                    {
+
+                        for (int e=f;e<Spiel.anzahlAlienSchuss-1;e++)
+                        {
+                        Alienschuss[e]=Alienschuss[e+1];
+                        }
+                        Spiel.anzahlAlienSchuss--;
+                        f--;
+                    }
+                }
+            }
+
+        }
+
+
+}
+
+alienschiessen()
+{
+    for (int i=0;i<Spiel.anzahlAlien;i++)
+    {
+        int zufall= std::rand()%1000+1;
+
+                if (zufall>995)
+                    {
+                    Alienschuss[Spiel.anzahlAlienSchuss].x=Alien[i].x+14;
+                    Alienschuss[Spiel.anzahlAlienSchuss].y=Alien[i].y+30;
+
+                    Spiel.anzahlAlienSchuss++;
+                    }
+    }
+}
+
+endeerkennug()
+{
+    if (Spiel.leben<=0 && Spiel.spiellaeuft)
+    {
+
+        Spiel.spiellaeuft=false;
+        Spiel.highscore();
+        Spiel.punkte=0;
+        Spiel.normalerunde();
+    }
+
+    if (Alien[Spiel.anzahlAlien-1].y>=360 && Spiel.spiellaeuft)
+    {
+        timer->stop();
+        Spiel.spiellaeuft=false;
+        Spiel.leben=0;
+        Spiel.highscore();
+        Spiel.punkte=0;
+         timer->start();
+        Spiel.normalerunde();
+    }
+
+    if (Spiel.anzahlAlien<=0)
+    {
+        Spiel.normalerunde();
+    }
+
+
+}
+
+explosionenentfernen()
+{
+    for (int i=0;i<Spiel.anzahlExplosion;i++)
+    {
+        Explosion[i].laufzeit++;
+
+        if (Explosion[i].laufzeit>25)
+        {
+            for (int c=i;c<Spiel.anzahlExplosion;c++)
+            {
+            Explosion[c]=Explosion[c+1];
+            }
+            Spiel.anzahlExplosion--;
+
+        }
+
+    }
+}
+
+schiessenerlauben()
+{
+    Spiel.schusszaehler++;
+
+    if (Spiel.schusszaehler>40)
+    {
+    Spiel.darfschiessen=true;
+    Spiel.schusszaehler=0;
+    }
+}
+
+schussbewegen()
+{
+    for (int i=0; i<Spiel.anzahlSchuss;i++)
+    {
+        Schuss[i].bewegen();
+    }
+
+    for (int i=0; i<Spiel.anzahlAlienSchuss;i++)
+    {
+        Alienschuss[i].bewegen();
+    }
+}
 
 
 class BasicDrawPane : public wxPanel
@@ -769,8 +780,10 @@ public:
     }
     void KeyDown(wxKeyEvent& event)
     {
-       if (Spiel.fensterImVordergrund==GetForegroundWindow())
+    if (Spiel.fensterImVordergrund==GetForegroundWindow())
     {
+
+
         if ((event.GetKeyCode()==80))
         {
            if (Spiel.spiellaeuft) {timer->Stop(); Spiel.spiellaeuft=false; Spiel.spiellaeuft=false;}
@@ -834,6 +847,10 @@ public:
         highscoreTXT.Close();
          if (Spiel.spiellaeuft) timer->start();
     }
+     if ((event.GetKeyCode()==27))           ///ESC
+        {
+           Close();
+        }
 
 
     }
@@ -872,15 +889,14 @@ bool MyApp::OnInit()
     bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
     bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
 
-    //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
+
 
 
 
     frame = new MyFrame();
     frame->Show();
-    frame->SetDoubleBuffered(true);
-    frame->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-    //frame->SetBackgroundColour(wxColour(0,0,0));
+
+
     Spiel.fensterImVordergrund=GetForegroundWindow();
 
     Spiel.normalerunde();
@@ -896,37 +912,37 @@ END_EVENT_TABLE()
 
 
 
+
 void RenderTimer::Notify()
 {
+    std::thread t0(schussbewegen);
+    std::thread t1(schiessenerlauben);
+    std::thread t2(tastatureingaben);
+    std::thread t3(schussloeschen);
 
-    Spiel.schiessenerlauben();
-    Spiel.tastatureingaben();
+
+    std::thread t4(trefferregistrieren);
+
+    std::thread t5(explosionenentfernen);
+
+    std::thread t6(alienBewegen);
 
 
-    Spiel.schussloeschen();
+    if (t0.joinable() || Spiel.leben==0) {}{t0.join();}
+    if (t1.joinable() || Spiel.leben==0) {t1.join();}
+    if (t2.joinable() || Spiel.leben==0) {t2.join();}
+    if (t3.joinable() || Spiel.leben==0) {t3.join();}
+    if (t4.joinable() || Spiel.leben==0) {t4.join();}
+    if (t5.joinable() || Spiel.leben==0) {t5.join();}
+    if (t6.joinable() || Spiel.leben==0) {t6.join();}
 
-    for (int i=0; i<Spiel.anzahlSchuss;i++)
-    {
-        Schuss[i].bewegen();
-    }
+    endeerkennug();
+    alienschiessen();
 
-    for (int i=0; i<Spiel.anzahlAlienSchuss;i++)
-    {
-        Alienschuss[i].bewegen();
-    }
-
-    Spiel.trefferregistrieren();
-
-    Spiel.explosionenentfernen();
-
-    Spiel.alienBewegen();
-
-    Spiel.alienschiessen();
-
-    Spiel.endeerkennug();
 
 
     pane->Refresh();
+
 }
 
 
@@ -960,11 +976,11 @@ void BasicDrawPane::render( wxDC& dc )
     if (Spiel.leben>0)
     {
 
-    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    SetBackgroundStyle(wxBG_STYLE_PAINT);
 
-    dc.SetBackground( *wxBLACK_BRUSH );
+    ///dc.SetBackground( *wxBLACK_BRUSH );
    //dc.SetBackgroundMode(1);
-    dc.Clear();
+    ///dc.Clear();
 
             if (bHintergrund.IsOk())
             {
