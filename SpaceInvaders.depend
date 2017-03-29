@@ -2678,12 +2678,11 @@
 
 1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\msw\rcdefs.h
 
-1490636894 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
+1490799136 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
 	<wx/sizer.h>
 	<wx/wx.h>
 	<wx/timer.h>
 	<cstdlib>
-	<iostream>
 	<ctime>
 	<wx/icon.h>
 	<wx/dcbuffer.h>

@@ -2,7 +2,7 @@
 #include <wx/wx.h>
 #include <wx/timer.h>
 #include <cstdlib>
-#include <iostream>
+//#include <iostream>
 #include <ctime>
 #include <wx/icon.h>
 #include <wx/dcbuffer.h>
@@ -12,10 +12,6 @@
 #include <windows.h>
 #include <stdio.h>
 #include <wx/textdlg.h>
-
-//#include <tchar.h>
-//#include <urlmon.h>
-//#pragma comment(lib, "urlmon.lib")
 
 
 
@@ -51,7 +47,6 @@ void RenderTimer::stop()
     wxTimer::Stop();
 }
 RenderTimer* timer;
-
 
 
 
@@ -161,6 +156,7 @@ class spiel
     int punkte=0;
     bool spiellaeuft=true;
     wxString name="";
+    HWND fensterImVordergrund;
 
 protected:
 
@@ -200,6 +196,9 @@ spiel::normalerunde()
 
 spiel::tastatureingaben()
 {
+    if (fensterImVordergrund==GetForegroundWindow())
+    {
+
     if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (spielerX-5>=0) )
     {
         spielerX=spielerX-2;
@@ -222,67 +221,10 @@ spiel::tastatureingaben()
 
     }
 
-     if (wxGetKeyState((wxKeyCode)'r') || wxGetKeyState((wxKeyCode)'R'))
-    {
-        spiellaeuft=true;
-        punkte=0;
-        anzahlSchuss=0;
-        darfschiessen=true;
-        leben=3;
-        normalerunde();                                         //Restart
-    }
-
-    if (wxGetKeyState((wxKeyCode)'h') || wxGetKeyState((wxKeyCode)'H'))
-    {
-
-        timer->stop();
-
-        wxString tmp;
-        _mkdir("Highscore");
-
-        wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
-        highscoreTXT.Create("Highscore/Highscore.txt");
-        highscoreTXT.Open();
-
-        wxTextFile highscoreTXTOnline( wxT("Highscore/HighscoreOnline.txt") );
-        highscoreTXTOnline.Create("Highscore/HighscoreOnline.txt");
-        highscoreTXTOnline.Open();
-
-        tmp="Lokaler Highscore: \n";
-        tmp=tmp+highscoreTXT.GetFirstLine();
-        while (!highscoreTXT.Eof())
-        {
-          tmp=tmp+" \n "+highscoreTXT.GetNextLine();
-        }
-        tmp=tmp+"\n";
-
-        tmp=tmp+"Globaler Highscore: \n";
-        tmp=tmp+highscoreTXTOnline.GetFirstLine();
-        while (!highscoreTXTOnline.Eof())
-        {
-          tmp=tmp+" \n "+highscoreTXTOnline.GetNextLine();
-        }
 
 
-        wxMessageBox( tmp,"Highscore" ,wxICON_INFORMATION);
-
-
-        highscoreTXT.Close();
-        timer->start();
-    }
-
-    if (wxGetKeyState(WXK_F1))
-    {
-
-        timer->stop();
-
-        wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
-
-        timer->start();
 
     }
-
-
 }
 
 spiel::schiessenerlauben()
@@ -761,7 +703,6 @@ spiel Spiel;
 
 
 
-
 class BasicDrawPane : public wxPanel
 {
 
@@ -789,9 +730,175 @@ public:
 };
 
 
+IMPLEMENT_APP(MyApp)
+
+class MyFrame : public wxFrame
+{
+
+    BasicDrawPane* drawPane;
+
+public:
+    MyFrame() : wxFrame((wxFrame *)NULL, -1,  wxT("Space Invaders"), wxPoint(50,50), wxSize(500,500),wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
+    {
+
+
+        drawPane = new BasicDrawPane( this );
+        drawPane->Bind(wxEVT_CHAR_HOOK, &MyFrame::KeyDown, this);
+
+        SetMinSize(GetSize());
+        SetMaxSize(GetSize());
+
+        SetIcon(wxICON(spaceinvadersicon));
+
+
+        timer = new RenderTimer(drawPane);
+        Show();
+        timer->start();
+
+    }
+    ~MyFrame()
+    {
+        delete timer;
+    }
+
+
+    void onClose(wxCloseEvent& evt)
+    {
+        timer->Stop();
+        evt.Skip();
+    }
+    void KeyDown(wxKeyEvent& event)
+    {
+       if (Spiel.fensterImVordergrund==GetForegroundWindow())
+    {
+        if ((event.GetKeyCode()==80))
+        {
+           if (Spiel.spiellaeuft) {timer->Stop(); Spiel.spiellaeuft=false; Spiel.spiellaeuft=false;}
+           else {timer->Start(); Spiel.spiellaeuft=true; Spiel.spiellaeuft=true;}
+        }
+
+        if ((event.GetKeyCode()==82))           ///Neustart
+        {
+            Spiel.spiellaeuft=true;
+            Spiel.punkte=0;
+            Spiel.anzahlSchuss=0;
+            Spiel.darfschiessen=true;
+            Spiel.leben=3;
+            if (Spiel.spiellaeuft) timer->start();
+            Spiel.normalerunde();
+        }
+
+        if (event.GetKeyCode()==WXK_F1)
+        {
+        timer->stop();
+
+        wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
+        if (Spiel.spiellaeuft) timer->start();
+        }
+
+         if (event.GetKeyCode()==72)
+        {
+
+        timer->stop();
+
+        wxString tmp;
+        _mkdir("Highscore");
+
+        wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
+        highscoreTXT.Create("Highscore/Highscore.txt");
+        highscoreTXT.Open();
+
+        wxTextFile highscoreTXTOnline( wxT("Highscore/HighscoreOnline.txt") );
+        highscoreTXTOnline.Create("Highscore/HighscoreOnline.txt");
+        highscoreTXTOnline.Open();
+
+        tmp="Lokaler Highscore: \n";
+        tmp=tmp+highscoreTXT.GetFirstLine();
+        while (!highscoreTXT.Eof())
+        {
+          tmp=tmp+" \n "+highscoreTXT.GetNextLine();
+        }
+        tmp=tmp+"\n";
+
+        tmp=tmp+"Globaler Highscore: \n";
+        tmp=tmp+highscoreTXTOnline.GetFirstLine();
+        while (!highscoreTXTOnline.Eof())
+        {
+          tmp=tmp+" \n "+highscoreTXTOnline.GetNextLine();
+        }
+
+
+        wxMessageBox( tmp,"Highscore" ,wxICON_INFORMATION);
+
+
+        highscoreTXT.Close();
+         if (Spiel.spiellaeuft) timer->start();
+    }
+
+
+    }
+
+        event.Skip();
+    }
+
+    DECLARE_EVENT_TABLE()
+};
+
+
+
+BEGIN_EVENT_TABLE(MyFrame, wxFrame)
+EVT_CLOSE(MyFrame::onClose)
+EVT_KEY_DOWN(MyFrame::KeyDown)
+END_EVENT_TABLE()
+
+
+
+bool MyApp::OnInit()
+{
+
+    std::srand(std::time(0));   //Zufallszahlen generieren
+
+
+
+
+
+    ///Bilder Laden
+    wxInitAllImageHandlers();
+    bHintergrund.LoadFile("Images\\Hintergrund.png",wxBITMAP_TYPE_PNG);
+    bRaumschiff.LoadFile("Images\\Raumschiff.png",wxBITMAP_TYPE_PNG);
+    bSchuss.LoadFile("Images\\Munition.png",wxBITMAP_TYPE_PNG);
+    bAlienschuss.LoadFile("Images\\Alienmunition.png",wxBITMAP_TYPE_PNG);
+    bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);
+    bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
+    bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
+
+    //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
+
+
+
+    frame = new MyFrame();
+    frame->Show();
+    frame->SetDoubleBuffered(true);
+    frame->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    //frame->SetBackgroundColour(wxColour(0,0,0));
+    Spiel.fensterImVordergrund=GetForegroundWindow();
+
+    Spiel.normalerunde();
+    return true;
+}
+
+
+
+
+BEGIN_EVENT_TABLE(BasicDrawPane, wxPanel)
+EVT_PAINT(BasicDrawPane::paintEvent)
+END_EVENT_TABLE()
+
+
 
 void RenderTimer::Notify()
 {
+
     Spiel.schiessenerlauben();
     Spiel.tastatureingaben();
 
@@ -821,112 +928,6 @@ void RenderTimer::Notify()
 
     pane->Refresh();
 }
-
-
-
-IMPLEMENT_APP(MyApp)
-
-class MyFrame : public wxFrame
-{
-
-    BasicDrawPane* drawPane;
-
-public:
-    MyFrame() : wxFrame((wxFrame *)NULL, -1,  wxT("Space Invaders"), wxPoint(50,50), wxSize(500,500),wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
-    {
-
-
-        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-        drawPane = new BasicDrawPane( this );
-        sizer->Add(drawPane, 1, wxEXPAND);
-        SetSizer(sizer);
-
-        SetMinSize(GetSize());
-        SetMaxSize(GetSize());
-
-        SetIcon(wxICON(spaceinvadersicon));
-
-
-        timer = new RenderTimer(drawPane);
-        Show();
-        timer->start();
-
-    }
-    ~MyFrame()
-    {
-        delete timer;
-    }
-
-
-    void onClose(wxCloseEvent& evt)
-    {
-        timer->Stop();
-        evt.Skip();
-    }
-
-
-    DECLARE_EVENT_TABLE()
-};
-
-
-BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-EVT_CLOSE(MyFrame::onClose)
-END_EVENT_TABLE()
-
-
-
-bool MyApp::OnInit()
-{
-
-
-
-    ///Highscore runterladen - vergleichen - hochladen
-
-
-
-
-//    HRESULT hr = URLDownloadToFile ( NULL, _T("http://staacraft.square7.ch/Downloads/Highscore.txt"), _T("Highscore\\HighscoreOnline.txt"), 0, NULL );
-
-
-
-
-
-    std::srand(std::time(0));   //Zufallszahlen generieren
-
-
-
-
-
-    ///Bilder Laden
-    wxInitAllImageHandlers();
-    bHintergrund.LoadFile("Images\\Hintergrund.png",wxBITMAP_TYPE_PNG);
-    bRaumschiff.LoadFile("Images\\Raumschiff.png",wxBITMAP_TYPE_PNG);
-    bSchuss.LoadFile("Images\\Munition.png",wxBITMAP_TYPE_PNG);
-    bAlienschuss.LoadFile("Images\\Alienmunition.png",wxBITMAP_TYPE_PNG);
-    bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);
-    bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
-    bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
-
-    //wxFrame->GetSize(*Spiel.fensterBreite,*Spiel.fensterHoehe);
-
-
-
-    frame = new MyFrame();
-    frame->Show();
-    frame->SetDoubleBuffered(true);
-    frame->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-    //frame->SetBackgroundColour(wxColour(0,0,0));
-
-
-    Spiel.normalerunde();
-    return true;
-}
-
-
-
-BEGIN_EVENT_TABLE(BasicDrawPane, wxPanel)
-EVT_PAINT(BasicDrawPane::paintEvent)
-END_EVENT_TABLE()
 
 
 

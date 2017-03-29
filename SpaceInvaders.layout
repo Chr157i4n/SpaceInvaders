@@ -4,25 +4,42 @@
 	<ActiveTarget name="Debug" />
 	<File name="SpaceInvadersApp.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="16337" topLine="364" />
+			<Cursor1 position="16841" topLine="152" />
 		</Cursor>
 		<Folding>
-			<Collapse line="25" />
+			<Collapse line="21" />
+			<Collapse line="36" />
 			<Collapse line="40" />
-			<Collapse line="49" />
-			<Collapse line="62" />
-			<Collapse line="75" />
-			<Collapse line="91" />
-			<Collapse line="111" />
-			<Collapse line="132" />
-			<Collapse line="201" />
-			<Collapse line="288" />
-			<Collapse line="299" />
-			<Collapse line="328" />
-			<Collapse line="359" />
-			<Collapse line="438" />
-			<Collapse line="454" />
-			<Collapse line="485" />
+			<Collapse line="45" />
+			<Collapse line="57" />
+			<Collapse line="70" />
+			<Collapse line="86" />
+			<Collapse line="106" />
+			<Collapse line="127" />
+			<Collapse line="169" />
+			<Collapse line="197" />
+			<Collapse line="230" />
+			<Collapse line="241" />
+			<Collapse line="270" />
+			<Collapse line="301" />
+			<Collapse line="380" />
+			<Collapse line="396" />
+			<Collapse line="427" />
+			<Collapse line="446" />
+			<Collapse line="706" />
+			<Collapse line="721" />
+			<Collapse line="765" />
+			<Collapse line="856" />
+			<Collapse line="899" />
+			<Collapse line="935" />
+			<Collapse line="940" />
+			<Collapse line="947" />
+			<Collapse line="954" />
 		</Folding>
+	</File>
+	<File name="SpaceInvadersApp.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="389" topLine="0" />
+		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
