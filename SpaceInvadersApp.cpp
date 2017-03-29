@@ -13,11 +13,11 @@
 #include <stdio.h>
 #include <wx/textdlg.h>
 #include <thread>
-
+#include <wx/richmsgdlg.h>
 
 
 class BasicDrawPane;
-
+int timerzeit=15;
 
 class RenderTimer : public wxTimer
 {
@@ -40,7 +40,7 @@ RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 }
 void RenderTimer::start()
 {
-    wxTimer::Start(15);
+    wxTimer::Start(timerzeit);
 }
 
 void RenderTimer::stop()
@@ -131,7 +131,7 @@ class spiel
             spiel(){};
             virtual ~spiel(){};
             normalerunde();
-            tastatureingaben();
+            /*tastatureingaben();
             schussbewegen();
             schiessenerlauben();
             schussloeschen();
@@ -139,18 +139,17 @@ class spiel
             trefferregistrieren();
             alienschiessen();
             endeerkennug();
-            explosionenentfernen();
+            explosionenentfernen(); */
             highscore();
 
     int spielerX=250-16;        //Anfangspositionen
     int spielerY=350;
 
-    int schussX;
-    int schussY;
     int anzahlSchuss=0;
-    int anzahlAlien=0;
+    int anzahlAlien=20;             ///Wird für das löschen und erstellen der Objekte benötigt
     int anzahlAlienSchuss=0;
     int anzahlExplosion=0;
+
     bool darfschiessen=true;
     bool aliensbewegensichnachrechts=true;
     int leben=3;
@@ -160,21 +159,26 @@ class spiel
     HWND fensterImVordergrund;
     int schusszaehler;
     int fensterHoehe=500, fensterBreite=500;
+
+    int geschwX=1,geschwY=10,schusswahrscheinlichkeit=5;
+    int geschwXNEU=1,geschwYNEU=10,schusswahrscheinlichkeitNEU=5;       ///Einstellungen
+    int lebenNEU=3,lebenPUNKTE=3,anzahlAlienNEU=20;
 };
 
 
 spiel::normalerunde()
 {
 
+
     anzahlAlienSchuss=0;
-    anzahlAlien=0;
+
     anzahlSchuss=0;
     spielerX=250-16;
 
 
         int spaltealien=0;
         int reihealien=1;
-        anzahlAlien=20;
+
         for (int i=0;i<anzahlAlien;i++)
         {
            spaltealien++;
@@ -188,7 +192,7 @@ spiel::normalerunde()
 
         }
 
-        //leben=3;
+
 }
 
 spiel::highscore()
@@ -520,8 +524,8 @@ alienBewegen()
     {
 
         ///Aliens bewegen
-      if (Spiel.aliensbewegensichnachrechts)  Alien[i].x++;
-      if (!Spiel.aliensbewegensichnachrechts)  Alien[i].x--;
+      if (Spiel.aliensbewegensichnachrechts)  Alien[i].x=Alien[i].x+Spiel.geschwX;
+      if (!Spiel.aliensbewegensichnachrechts)  Alien[i].x=Alien[i].x-Spiel.geschwX;
 
 
         ///Richtung wechseln und eine Reihe nach unten
@@ -572,7 +576,7 @@ trefferregistrieren()
                 }
             Spiel.anzahlAlien--;
             if (Spiel.spiellaeuft)
-            {Spiel.punkte=Spiel.punkte+10;}               ///Punkte hinzufügen
+            {Spiel.punkte=Spiel.punkte+(Spiel.geschwX+Spiel.geschwY+Spiel.schusswahrscheinlichkeit-Spiel.lebenPUNKTE);}               ///Punkte hinzufügen
 
 
             }
@@ -630,7 +634,7 @@ alienschiessen()
     {
         int zufall= std::rand()%1000+1;
 
-                if (zufall>995)
+                if (zufall>1000-Spiel.schusswahrscheinlichkeit)
                     {
                     Alienschuss[Spiel.anzahlAlienSchuss].x=Alien[i].x+14;
                     Alienschuss[Spiel.anzahlAlienSchuss].y=Alien[i].y+30;
@@ -784,24 +788,30 @@ public:
     {
 
 
-        if ((event.GetKeyCode()==80))
+        if ((event.GetKeyCode()==80))           ///P        Pause
         {
            if (Spiel.spiellaeuft) {timer->Stop(); Spiel.spiellaeuft=false; Spiel.spiellaeuft=false;}
            else {timer->Start(); Spiel.spiellaeuft=true; Spiel.spiellaeuft=true;}
         }
 
-        if ((event.GetKeyCode()==82))           ///Neustart
+        if ((event.GetKeyCode()==82))           ///R        Neustart
         {
+            Spiel.geschwX=Spiel.geschwXNEU;
+            Spiel.geschwY=Spiel.geschwYNEU;
+            Spiel.schusswahrscheinlichkeit=Spiel.schusswahrscheinlichkeitNEU;
+            Spiel.anzahlAlien=Spiel.anzahlAlienNEU;
+            Spiel.lebenPUNKTE=Spiel.lebenNEU;
+
             Spiel.spiellaeuft=true;
             Spiel.punkte=0;
             Spiel.anzahlSchuss=0;
             Spiel.darfschiessen=true;
-            Spiel.leben=3;
+            Spiel.leben=Spiel.lebenNEU;
             if (Spiel.spiellaeuft) timer->start();
             Spiel.normalerunde();
         }
 
-        if (event.GetKeyCode()==WXK_F1)
+        if (event.GetKeyCode()==WXK_F1)         /// F1      Hilfe
         {
         timer->stop();
 
@@ -809,7 +819,7 @@ public:
         if (Spiel.spiellaeuft) timer->start();
         }
 
-         if (event.GetKeyCode()==72)
+        if (event.GetKeyCode()==72)            ///H        Highscore
         {
 
         timer->stop();
@@ -847,11 +857,69 @@ public:
         highscoreTXT.Close();
          if (Spiel.spiellaeuft) timer->start();
     }
-     if ((event.GetKeyCode()==27))           ///ESC
+
+        if ((event.GetKeyCode()==27))           ///ESC      Beenden
         {
            Close();
         }
 
+        if ((event.GetKeyCode()==69))         ///E        Einstellungen
+        {
+            timer->stop();
+
+        wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Spielgeschwindigkeit (1-100)"),wxT("Einstellungen"),wxT("85"));
+             if ( dlg->ShowModal() == wxID_OK )
+                {
+
+                 timerzeit = 100- wxAtoi(dlg->GetValue());
+                }
+                dlg->Destroy();
+
+
+        wxTextEntryDialog *dlg1 = new wxTextEntryDialog((wxFrame *)NULL,wxT("Schwierigkeit (1-10)"),wxT("Einstellungen"),wxT("2"));
+             if ( dlg1->ShowModal() == wxID_OK )
+                {
+
+                 int tmp =  wxAtoi(dlg1->GetValue());
+                 if (tmp>0 && tmp<=10)
+                 {
+                     Spiel.geschwXNEU=tmp/2;
+                     Spiel.geschwYNEU=tmp*5;
+                 }
+
+                }
+                dlg1->Destroy();
+
+
+                wxTextEntryDialog *dlg2 = new wxTextEntryDialog((wxFrame *)NULL,wxT("Schusswahrscheinlichkeit der Aliens (1-10)"),wxT("Einstellungen"),wxT("5"));
+             if ( dlg2->ShowModal() == wxID_OK )
+                {
+
+                 int tmp =  wxAtoi(dlg2->GetValue());
+                 if (tmp>0 && tmp<=10)
+                 {
+                    Spiel.schusswahrscheinlichkeitNEU=tmp;
+                 }
+
+                }
+                dlg2->Destroy();
+
+
+                 wxTextEntryDialog *dlg3 = new wxTextEntryDialog((wxFrame *)NULL,wxT("Anzahl deiner Leben (1-10)"),wxT("Einstellungen"),wxT("3"));
+             if ( dlg3->ShowModal() == wxID_OK )
+                {
+
+                 int tmp =  wxAtoi(dlg3->GetValue());
+                 if (tmp>0 && tmp<=10)
+                 {
+                    Spiel.lebenNEU=tmp;
+                 }
+
+                }
+                dlg3->Destroy();
+
+            if (Spiel.spiellaeuft) timer->start();
+        }
 
     }
 
@@ -919,12 +987,8 @@ void RenderTimer::Notify()
     std::thread t1(schiessenerlauben);
     std::thread t2(tastatureingaben);
     std::thread t3(schussloeschen);
-
-
     std::thread t4(trefferregistrieren);
-
     std::thread t5(explosionenentfernen);
-
     std::thread t6(alienBewegen);
 
 
@@ -938,8 +1002,6 @@ void RenderTimer::Notify()
 
     endeerkennug();
     alienschiessen();
-
-
 
     pane->Refresh();
 

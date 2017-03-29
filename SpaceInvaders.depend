@@ -2678,7 +2678,7 @@
 
 1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\msw\rcdefs.h
 
-1490799136 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
+1490827546 source:c:\users\christian\git\spaceinvaders\spaceinvadersapp.cpp
 	<wx/sizer.h>
 	<wx/wx.h>
 	<wx/timer.h>
@@ -2692,6 +2692,8 @@
 	<windows.h>
 	<stdio.h>
 	<wx/textdlg.h>
+	<thread>
+	<wx/richmsgdlg.h>
 
 1490364698 c:\users\christian\git\spaceinvaders\spiel.h
 
@@ -2769,4 +2771,14 @@
 	<stdio.h>
 	<wx/textdlg.h>
 	<thread>
+
+1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\richmsgdlg.h
+	"wx/defs.h"
+	"wx/msgdlg.h"
+	"wx/generic/richmsgdlgg.h"
+	"wx/msw/richmsgdlg.h"
+
+1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\generic\richmsgdlgg.h
+
+1485976382 c:\wxwidgets-3.1.0\wx310\include\wx\msw\richmsgdlg.h
 
