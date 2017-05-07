@@ -2,7 +2,6 @@
 #include <wx/wx.h>
 #include <wx/timer.h>
 #include <cstdlib>
-//#include <iostream>
 #include <ctime>
 #include <wx/icon.h>
 #include <wx/dcbuffer.h>
@@ -13,11 +12,14 @@
 #include <stdio.h>
 #include <wx/textdlg.h>
 #include <thread>
-#include <wx/richmsgdlg.h>
 
+#include "alien.h"
+#include "explosion.h"
+#include "alienschuss.h"
+#include "schuss.h"
 
 class BasicDrawPane;
-int timerzeit=15;
+
 
 class RenderTimer : public wxTimer
 {
@@ -29,7 +31,7 @@ BasicDrawPane* pane;
 public:
     RenderTimer(BasicDrawPane* pane);
     void Notify();
-    void start();
+    void start(int timerzeit);
     void stop();
 };
 
@@ -38,7 +40,7 @@ RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 {
    RenderTimer::pane = pane;
 }
-void RenderTimer::start()
+void RenderTimer::start(int timerzeit)
 {
     wxTimer::Start(timerzeit);
 }
@@ -55,69 +57,13 @@ RenderTimer* timer;
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
 
 
-class explosion
-{
-    public:
-        explosion(){};
-        virtual ~explosion(){};
-        int x;
-        int y;
-        int laufzeit;
 
-};
 
 explosion Explosion[10];
 
-class alienschuss
-{
-    public:
-        alienschuss(){};
-        virtual ~alienschuss(){};
-        int x;
-        int y;
-        bewegen() {y=y+2;};
-
-    protected:
-
-    private:
-};
-
 alienschuss Alienschuss[100];
 
-class alien
-{
-    public:
-        alien(){};
-        virtual ~alien(){};
-        int x;
-        int y;
-
-
-    protected:
-
-    private:
-};
-
 alien Alien[30];
-
-
-
-
-
-class schuss
-{
-    public:
-        schuss(){};
-        virtual ~schuss(){};
-        int x;
-        int y;
-        bewegen() {y=y-2;};
-
-
-    protected:
-
-    private:
-};
 
 schuss Schuss[10];
 
@@ -157,12 +103,13 @@ class spiel
     bool spiellaeuft=true;
     wxString name="";
     HWND fensterImVordergrund;
-    int schusszaehler;
+    int schusszaehler=0;
     int fensterHoehe=500, fensterBreite=500;
 
     int geschwX=1,geschwY=10,schusswahrscheinlichkeit=5;
     int geschwXNEU=1,geschwYNEU=10,schusswahrscheinlichkeitNEU=5;       ///Einstellungen
     int lebenNEU=3,lebenPUNKTE=3,anzahlAlienNEU=20;
+    int timerzeit=15,schussgeschwAliens=2,schussgeschwSpieler=3;
 };
 
 
@@ -558,11 +505,13 @@ trefferregistrieren()
         {
             if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
             {               ///Treffer erkennen
-
+            if (Spiel.anzahlExplosion<10)
+            {
             Explosion[Spiel.anzahlExplosion].x=Alien[c].x;
             Explosion[Spiel.anzahlExplosion].y=Alien[c].y;
             Explosion[Spiel.anzahlExplosion].laufzeit=0;
             Spiel.anzahlExplosion++;
+            }
 
             for (int d=i;d<Spiel.anzahlSchuss-1;d++)
                 {                                   ///Schuss löschen
@@ -576,7 +525,7 @@ trefferregistrieren()
                 }
             Spiel.anzahlAlien--;
             if (Spiel.spiellaeuft)
-            {Spiel.punkte=Spiel.punkte+(Spiel.geschwX+Spiel.geschwY+Spiel.schusswahrscheinlichkeit-Spiel.lebenPUNKTE);}               ///Punkte hinzufügen
+            {Spiel.punkte=Spiel.punkte+(Spiel.geschwX+Spiel.geschwY+Spiel.schusswahrscheinlichkeit-Spiel.lebenPUNKTE-Spiel.schussgeschwSpieler+Spiel.schussgeschwAliens);}               ///Punkte hinzufügen
 
 
             }
@@ -634,7 +583,7 @@ alienschiessen()
     {
         int zufall= std::rand()%1000+1;
 
-                if (zufall>1000-Spiel.schusswahrscheinlichkeit)
+                if (zufall>1000-Spiel.schusswahrscheinlichkeit && Spiel.anzahlAlienSchuss<100)
                     {
                     Alienschuss[Spiel.anzahlAlienSchuss].x=Alien[i].x+14;
                     Alienschuss[Spiel.anzahlAlienSchuss].y=Alien[i].y+30;
@@ -662,12 +611,13 @@ endeerkennug()
         Spiel.leben=0;
         Spiel.highscore();
         Spiel.punkte=0;
-         timer->start();
+         timer->start(Spiel.timerzeit);
         Spiel.normalerunde();
     }
 
     if (Spiel.anzahlAlien<=0)
     {
+        Spiel.anzahlAlien=Spiel.anzahlAlienNEU;
         Spiel.normalerunde();
     }
 
@@ -697,7 +647,7 @@ schiessenerlauben()
 {
     Spiel.schusszaehler++;
 
-    if (Spiel.schusszaehler>40)
+    if (Spiel.schusszaehler>40 && Spiel.anzahlSchuss<10)
     {
     Spiel.darfschiessen=true;
     Spiel.schusszaehler=0;
@@ -708,14 +658,16 @@ schussbewegen()
 {
     for (int i=0; i<Spiel.anzahlSchuss;i++)
     {
-        Schuss[i].bewegen();
+        Schuss[i].bewegen(Spiel.schussgeschwSpieler);
     }
 
     for (int i=0; i<Spiel.anzahlAlienSchuss;i++)
     {
-        Alienschuss[i].bewegen();
+        Alienschuss[i].bewegen(Spiel.schussgeschwAliens);
     }
 }
+
+
 
 
 class BasicDrawPane : public wxPanel
@@ -768,7 +720,7 @@ public:
 
         timer = new RenderTimer(drawPane);
         Show();
-        timer->start();
+        timer->start(Spiel.timerzeit);
 
     }
     ~MyFrame()
@@ -791,7 +743,7 @@ public:
         if ((event.GetKeyCode()==80))           ///P        Pause
         {
            if (Spiel.spiellaeuft) {timer->Stop(); Spiel.spiellaeuft=false; Spiel.spiellaeuft=false;}
-           else {timer->Start(); Spiel.spiellaeuft=true; Spiel.spiellaeuft=true;}
+           else {timer->start(Spiel.timerzeit); Spiel.spiellaeuft=true; Spiel.spiellaeuft=true;}
         }
 
         if ((event.GetKeyCode()==82))           ///R        Neustart
@@ -807,7 +759,7 @@ public:
             Spiel.anzahlSchuss=0;
             Spiel.darfschiessen=true;
             Spiel.leben=Spiel.lebenNEU;
-            if (Spiel.spiellaeuft) timer->start();
+            if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
             Spiel.normalerunde();
         }
 
@@ -816,7 +768,7 @@ public:
         timer->stop();
 
         wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
-        if (Spiel.spiellaeuft) timer->start();
+        if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
         }
 
         if (event.GetKeyCode()==72)            ///H        Highscore
@@ -855,7 +807,7 @@ public:
 
 
         highscoreTXT.Close();
-         if (Spiel.spiellaeuft) timer->start();
+         if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
     }
 
         if ((event.GetKeyCode()==27))           ///ESC      Beenden
@@ -871,7 +823,7 @@ public:
              if ( dlg->ShowModal() == wxID_OK )
                 {
 
-                 timerzeit = 100- wxAtoi(dlg->GetValue());
+                 Spiel.timerzeit = 100- wxAtoi(dlg->GetValue());
                 }
                 dlg->Destroy();
 
@@ -918,7 +870,33 @@ public:
                 }
                 dlg3->Destroy();
 
-            if (Spiel.spiellaeuft) timer->start();
+                 wxTextEntryDialog *dlg4 = new wxTextEntryDialog((wxFrame *)NULL,wxT("Geschwindigkeit der AlienSchuesse (1-10)"),wxT("Einstellungen"),wxT("2"));
+             if ( dlg4->ShowModal() == wxID_OK )
+                {
+
+                 int tmp =  wxAtoi(dlg4->GetValue());
+                 if (tmp>0 && tmp<=10)
+                 {
+                    Spiel.schussgeschwAliens=tmp;
+                 }
+
+                }
+                dlg4->Destroy();
+
+                  wxTextEntryDialog *dlg5 = new wxTextEntryDialog((wxFrame *)NULL,wxT("Geschwindigkeit der Spielerschuesse (1-10)"),wxT("Einstellungen"),wxT("3"));
+             if ( dlg5->ShowModal() == wxID_OK )
+                {
+
+                 int tmp =  wxAtoi(dlg5->GetValue());
+                 if (tmp>0 && tmp<=10)
+                 {
+                    Spiel.schussgeschwSpieler=tmp;
+                 }
+
+                }
+                dlg4->Destroy();
+
+            if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
         }
 
     }

@@ -67,9 +67,17 @@
 		</Linker>
 		<Unit filename="SpaceInvadersApp.cpp" />
 		<Unit filename="SpaceInvadersApp.h" />
+		<Unit filename="alien.cpp" />
+		<Unit filename="alien.h" />
+		<Unit filename="alienschuss.cpp" />
+		<Unit filename="alienschuss.h" />
+		<Unit filename="explosion.cpp" />
+		<Unit filename="explosion.h" />
 		<Unit filename="resource.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
+		<Unit filename="schuss.cpp" />
+		<Unit filename="schuss.h" />
 		<Unit filename="wx_pch.h">
 			<Option compile="1" />
 			<Option weight="0" />
