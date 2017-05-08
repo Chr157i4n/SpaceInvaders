@@ -17,6 +17,7 @@
 #include "explosion.h"
 #include "alienschuss.h"
 #include "schuss.h"
+#include "spieler.h"
 
 class BasicDrawPane;
 
@@ -67,6 +68,7 @@ alien Alien[30];
 
 schuss Schuss[10];
 
+spieler Spieler;
 
 
 
@@ -88,24 +90,17 @@ class spiel
             explosionenentfernen(); */
             highscore();
 
-    int spielerX=250-16;        //Anfangspositionen
-    int spielerY=350;
+
 
     int anzahlSchuss=0;
     int anzahlAlien=20;             ///Wird für das löschen und erstellen der Objekte benötigt
     int anzahlAlienSchuss=0;
     int anzahlExplosion=0;
 
-    bool darfschiessen=true;
     bool aliensbewegensichnachrechts=true;
-    int leben=3;
-    int punkte=0;
     bool spiellaeuft=true;
-    wxString name="";
     HWND fensterImVordergrund;
-    int schusszaehler=0;
     int fensterHoehe=500, fensterBreite=500;
-
     int geschwX=1,geschwY=10,schusswahrscheinlichkeit=5;
     int geschwXNEU=1,geschwYNEU=10,schusswahrscheinlichkeitNEU=5;       ///Einstellungen
     int lebenNEU=3,lebenPUNKTE=3,anzahlAlienNEU=20;
@@ -120,7 +115,7 @@ spiel::normalerunde()
     anzahlAlienSchuss=0;
 
     anzahlSchuss=0;
-    spielerX=250-16;
+    Spieler.x=250-16;
 
 
         int spaltealien=0;
@@ -134,8 +129,8 @@ spiel::normalerunde()
            {    spaltealien=1;
                 reihealien++;   }                               ///Aliens hinzufügen
 
-        Alien[i].x=spaltealien*40;
-        Alien[i].y=reihealien*40;
+        Alien[i].reseten(spaltealien*40,reihealien*40);
+
 
         }
 
@@ -176,7 +171,7 @@ spiel::highscore()
     do {
 
 
-        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hs && punkte>0)
+        if ((Spieler.punkte>wxAtoi(highscore) || highscore=="")    && !hs && Spieler.punkte>0)
             {
 
 
@@ -185,20 +180,20 @@ spiel::highscore()
                 {
                     dlg->Destroy();
                     wxString punktstand;
-                    punktstand << punkte;
+                    punktstand << Spieler.punkte;
 
 
 
-                        if (punkte<100)
+                        if (Spieler.punkte<100)
                         {
                         punktstand=punktstand+" ";
                         }
-                        if (punkte<1000)
+                        if (Spieler.punkte<1000)
                         {
                         punktstand=punktstand+" ";
                         }
-                        name=dlg->GetValue();
-                    punktstand=punktstand+"   "+name;
+                        Spieler.name=dlg->GetValue();
+                    punktstand=punktstand+"   "+Spieler.name;
                     highscoreTXT.InsertLine( punktstand, platz);
                     highscoreTXT.Write();
                     hs=true;
@@ -230,7 +225,7 @@ spiel::highscore()
 
     } while(!highscoreTXT.Eof() && platz<10);
 
-    if (platz<10 && !hs && punkte>0)
+    if (platz<10 && !hs && Spieler.punkte>0)
     {
 
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
@@ -238,17 +233,17 @@ spiel::highscore()
                 {
                     dlg->Destroy();
             wxString punktstand;
-            punktstand << punkte;                   ///Punktzahl ganz am ende
-            if (punkte<100)
+            punktstand << Spieler.punkte;                   ///Punktzahl ganz am ende
+            if (Spieler.punkte<100)
             {
             punktstand=punktstand+" ";
             }
-            if (punkte<1000)
+            if (Spieler.punkte<1000)
             {
             punktstand=punktstand+" ";
             }
-            name=dlg->GetValue();
-             punktstand=punktstand+"   "+name;
+            Spieler.name=dlg->GetValue();
+             punktstand=punktstand+"   "+Spieler.name;
             highscoreTXT.InsertLine( punktstand, platz);
             highscoreTXT.Write();
                 } else {chanceled=true;}
@@ -311,25 +306,25 @@ if (!chanceled){
     do {
 
 
-        if ((punkte>wxAtoi(highscore) || highscore=="")    && !hso && punkte>0)
+        if ((Spieler.punkte>wxAtoi(highscore) || highscore=="")    && !hso && Spieler.punkte>0)
             {
 
 
 
                     wxString punktstand;
-                    punktstand << punkte;
+                    punktstand << Spieler.punkte;
 
 
 
-                        if (punkte<100)
+                        if (Spieler.punkte<100)
                         {
                         punktstand=punktstand+" ";
                         }
-                        if (punkte<1000)
+                        if (Spieler.punkte<1000)
                         {
                         punktstand=punktstand+" ";
                         }
-                    punktstand=punktstand+"   "+name;
+                    punktstand=punktstand+"   "+Spieler.name;
                     highscoreTXTOnline.InsertLine( punktstand, platz);
                     highscoreTXTOnline.Write();
                     hso=true;
@@ -361,19 +356,19 @@ if (!chanceled){
     } while(!highscoreTXTOnline.Eof() && platz<10);
 
 
-    if (platz<10 && !hso && punkte>0)
+    if (platz<10 && !hso && Spieler.punkte>0)
     {
             wxString punktstand;
-            punktstand << punkte;                   ///Punktzahl ganz am ende
-            if (punkte<100)
+            punktstand << Spieler.punkte;                   ///Punktzahl ganz am ende
+            if (Spieler.punkte<100)
             {
             punktstand=punktstand+" ";
             }
-            if (punkte<1000)
+            if (Spieler.punkte<1000)
             {
             punktstand=punktstand+" ";
             }
-             punktstand=punktstand+"   "+name;
+             punktstand=punktstand+"   "+Spieler.name;
             highscoreTXTOnline.InsertLine( punktstand, platz);
             highscoreTXTOnline.Write();
                 }
@@ -408,26 +403,22 @@ tastatureingaben()
     if (Spiel.fensterImVordergrund==GetForegroundWindow())
     {
 
-    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (Spiel.spielerX-5>=0) )
+    if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (Spieler.x-5>=0) )
     {
-        Spiel.spielerX=Spiel.spielerX-2;
+        Spieler.x=Spieler.x-2;
 
     }
 
-    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (Spiel.spielerX+48<=Spiel.fensterBreite))
+    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (Spieler.x+48<=Spiel.fensterBreite))
     {
-        Spiel.spielerX=Spiel.spielerX+2;
+        Spieler.x=Spieler.x+2;
     }
 
-    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (Spiel.darfschiessen==true))
+    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (Spieler.darfschiessen==true))
     {
-    Spiel.anzahlSchuss++;
-    Schuss[Spiel.anzahlSchuss-1].x=Spiel.spielerX+12;      ///Schuss positionieren
-    Schuss[Spiel.anzahlSchuss-1].y=Spiel.spielerY-8;
 
-    Spiel.darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
-    Spiel.schusszaehler=0;
-
+        Spieler.schiessen(&Schuss[Spiel.anzahlSchuss]);
+        Spiel.anzahlSchuss++;
     }
 
 
@@ -440,7 +431,7 @@ schussloeschen()
 {
   for (int i=0;i<Spiel.anzahlSchuss;i++)
         {
-          if (Schuss[i].y<0)       ///Schuss oben raus
+          if (Schuss[i].getY()<0)       ///Schuss oben raus
           {
                 for (int c=i;c<Spiel.anzahlSchuss-1;c++)
                 {
@@ -469,31 +460,13 @@ alienBewegen()
 {
     for (int i=0; i<Spiel.anzahlAlien;i++)
     {
-
-        ///Aliens bewegen
-      if (Spiel.aliensbewegensichnachrechts)  Alien[i].x=Alien[i].x+Spiel.geschwX;
-      if (!Spiel.aliensbewegensichnachrechts)  Alien[i].x=Alien[i].x-Spiel.geschwX;
+        Alien[i].bewegenY(Spiel.geschwY,500);       ///bewegen
+        Alien[i].bewegenX(Spiel.fensterBreite);
 
 
-        ///Richtung wechseln und eine Reihe nach unten
-      if ((Alien[i].x>Spiel.fensterBreite-50) && (Spiel.aliensbewegensichnachrechts))
-      {
-          Spiel.aliensbewegensichnachrechts=false;
-            for (int c=0;c<Spiel.anzahlAlien;c++)
-                {
-                Alien[c].y=Alien[c].y+20;
-                }
-      }
-      if ((Alien[i].x<2) && (!Spiel.aliensbewegensichnachrechts))
-        {
-            Spiel.aliensbewegensichnachrechts=true;
-            for (int c=0;c<Spiel.anzahlAlien;c++)
-                {
-                Alien[c].y=Alien[c].y+20;
-                }
-        }
+
+
     }
-
 }
 
 trefferregistrieren()
@@ -503,34 +476,32 @@ trefferregistrieren()
    {
           for (int c=0;c<Spiel.anzahlAlien;c++)
         {
-            if ( (Schuss[i].x>Alien[c].x) && (Schuss[i].x+4<Alien[c].x+30) && (Schuss[i].y>Alien[c].y) & (Schuss[i].y+9<Alien[c].y+30) )
-            {               ///Treffer erkennen
-            if (Spiel.anzahlExplosion<10)
+                if (Schuss[i].trefferpruefen(&Alien[c],&Explosion[Spiel.anzahlExplosion],&Spiel.anzahlExplosion)==true)     ///Eigentliche Trefferanalyse
             {
-            Explosion[Spiel.anzahlExplosion].x=Alien[c].x;
-            Explosion[Spiel.anzahlExplosion].y=Alien[c].y;
-            Explosion[Spiel.anzahlExplosion].laufzeit=0;
-            Spiel.anzahlExplosion++;
-            }
 
-            for (int d=i;d<Spiel.anzahlSchuss-1;d++)
+                 for (int d=i;d<Spiel.anzahlSchuss-1;d++)
                 {                                   ///Schuss löschen
                 Schuss[d]=Schuss[d+1];
                 }
-            Spiel.anzahlSchuss--;
+                Spiel.anzahlSchuss--;
 
-            for (int d=c;d<Spiel.anzahlAlien-1;d++)       ///Alien löschen
+                for (int d=c;d<Spiel.anzahlAlien-1;d++)       ///Alien löschen
                 {
                 Alien[d]=Alien[d+1];
                 }
-            Spiel.anzahlAlien--;
-            if (Spiel.spiellaeuft)
-            {Spiel.punkte=Spiel.punkte+(Spiel.geschwX+Spiel.geschwY+Spiel.schusswahrscheinlichkeit-Spiel.lebenPUNKTE-Spiel.schussgeschwSpieler+Spiel.schussgeschwAliens);}               ///Punkte hinzufügen
-
-
+                Spiel.anzahlAlien--;
+                if (Spiel.spiellaeuft)
+                {Spieler.punkte=Spieler.punkte+(Spiel.geschwX+Spiel.geschwY+Spiel.schusswahrscheinlichkeit-Spiel.lebenPUNKTE-Spiel.schussgeschwSpieler+Spiel.schussgeschwAliens);}               ///Punkte hinzufügen
             }
+
         }
-   }
+
+    }
+
+
+
+
+
 
 
         ///Alienschüsse -> Spieler
@@ -539,7 +510,7 @@ trefferregistrieren()
 
 
 
-            if ( (Alienschuss[i].x>Spiel.spielerX) && (Alienschuss[i].x+3<Spiel.spielerX+25) && (Alienschuss[i].y>Spiel.spielerY) & (Alienschuss[i].y+9<Spiel.spielerY+45 ) )
+            if ( (Alienschuss[i].x>Spieler.x) && (Alienschuss[i].x+3<Spieler.x+25) && (Alienschuss[i].y>Spieler.y) & (Alienschuss[i].y+9<Spieler.y+45 ) )
             {
 
             //Explosion[anzahlExplosion].x=spielerX;        ///Explosionen an der alten Position des Spielers
@@ -553,8 +524,8 @@ trefferregistrieren()
                 }
             Spiel.anzahlAlienSchuss--;
 
-            Spiel.spielerX=250-16;
-            Spiel.leben--;
+            Spieler.x=250-16;
+            Spieler.leben--;
 
             ///Schüsse beim Spawnpunkt entfernen
             for (int f=0;f<Spiel.anzahlAlienSchuss;f++)
@@ -577,40 +548,38 @@ trefferregistrieren()
 
 }
 
+
 alienschiessen()
 {
     for (int i=0;i<Spiel.anzahlAlien;i++)
     {
-        int zufall= std::rand()%1000+1;
+        if (Spiel.anzahlAlienSchuss<100)   ///Schiessen
+        {
+            if (Alien[i].schiessen(&Alienschuss[Spiel.anzahlAlienSchuss],Spiel.schusswahrscheinlichkeit)==true)
+            {Spiel.anzahlAlienSchuss++;}
+        }
 
-                if (zufall>1000-Spiel.schusswahrscheinlichkeit && Spiel.anzahlAlienSchuss<100)
-                    {
-                    Alienschuss[Spiel.anzahlAlienSchuss].x=Alien[i].x+14;
-                    Alienschuss[Spiel.anzahlAlienSchuss].y=Alien[i].y+30;
-
-                    Spiel.anzahlAlienSchuss++;
-                    }
     }
 }
 
 endeerkennug()
 {
-    if (Spiel.leben<=0 && Spiel.spiellaeuft)
+    if (Spieler.leben<=0 && Spiel.spiellaeuft)
     {
 
         Spiel.spiellaeuft=false;
         Spiel.highscore();
-        Spiel.punkte=0;
+        Spieler.punkte=0;
         Spiel.normalerunde();
     }
 
-    if (Alien[Spiel.anzahlAlien-1].y>=360 && Spiel.spiellaeuft)
+    if (Alien[Spiel.anzahlAlien-1].getY()>=360 && Spiel.spiellaeuft)
     {
         timer->stop();
         Spiel.spiellaeuft=false;
-        Spiel.leben=0;
+        Spieler.leben=0;
         Spiel.highscore();
-        Spiel.punkte=0;
+        Spieler.punkte=0;
          timer->start(Spiel.timerzeit);
         Spiel.normalerunde();
     }
@@ -645,13 +614,7 @@ explosionenentfernen()
 
 schiessenerlauben()
 {
-    Spiel.schusszaehler++;
-
-    if (Spiel.schusszaehler>40 && Spiel.anzahlSchuss<10)
-    {
-    Spiel.darfschiessen=true;
-    Spiel.schusszaehler=0;
-    }
+    Spieler.schiessenerlauben(Spiel.anzahlSchuss);
 }
 
 schussbewegen()
@@ -755,10 +718,10 @@ public:
             Spiel.lebenPUNKTE=Spiel.lebenNEU;
 
             Spiel.spiellaeuft=true;
-            Spiel.punkte=0;
+            Spieler.punkte=0;
             Spiel.anzahlSchuss=0;
-            Spiel.darfschiessen=true;
-            Spiel.leben=Spiel.lebenNEU;
+            Spieler.darfschiessen=true;
+            Spieler.leben=Spiel.lebenNEU;
             if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
             Spiel.normalerunde();
         }
@@ -970,13 +933,13 @@ void RenderTimer::Notify()
     std::thread t6(alienBewegen);
 
 
-    if (t0.joinable() || Spiel.leben==0) {}{t0.join();}
-    if (t1.joinable() || Spiel.leben==0) {t1.join();}
-    if (t2.joinable() || Spiel.leben==0) {t2.join();}
-    if (t3.joinable() || Spiel.leben==0) {t3.join();}
-    if (t4.joinable() || Spiel.leben==0) {t4.join();}
-    if (t5.joinable() || Spiel.leben==0) {t5.join();}
-    if (t6.joinable() || Spiel.leben==0) {t6.join();}
+    if (t0.joinable() || Spieler.leben==0) {}{t0.join();}
+    if (t1.joinable() || Spieler.leben==0) {t1.join();}
+    if (t2.joinable() || Spieler.leben==0) {t2.join();}
+    if (t3.joinable() || Spieler.leben==0) {t3.join();}
+    if (t4.joinable() || Spieler.leben==0) {t4.join();}
+    if (t5.joinable() || Spieler.leben==0) {t5.join();}
+    if (t6.joinable() || Spieler.leben==0) {t6.join();}
 
     endeerkennug();
     alienschiessen();
@@ -1013,7 +976,7 @@ void BasicDrawPane::render( wxDC& dc )
 
     ///Rendering während das Spiel läuft
 
-    if (Spiel.leben>0)
+    if (Spieler.leben>0)
     {
 
     SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -1032,7 +995,7 @@ void BasicDrawPane::render( wxDC& dc )
             {
                 for (int i=0;i<Spiel.anzahlSchuss;i++)
                 {
-                dc.DrawBitmap(bSchuss,Schuss[i].x,Schuss[i].y);
+                dc.DrawBitmap(bSchuss,Schuss[i].getX(),Schuss[i].getY());
                 }
             }
 
@@ -1047,7 +1010,7 @@ void BasicDrawPane::render( wxDC& dc )
 
             if (bRaumschiff.IsOk())
             {
-            dc.DrawBitmap(bRaumschiff,Spiel.spielerX,Spiel.spielerY);
+            dc.DrawBitmap(bRaumschiff,Spieler.x,Spieler.y);
             }
 
 
@@ -1055,10 +1018,10 @@ void BasicDrawPane::render( wxDC& dc )
             {
                 for (int i=0;i<Spiel.anzahlAlien;i++)
                 {
-                dc.DrawBitmap(bAlien,Alien[i].x,Alien[i].y);
+                dc.DrawBitmap(bAlien,Alien[i].getX(),Alien[i].getY());
                 }
 
-        for (int i=1; i<=Spiel.leben;i++)
+        for (int i=1; i<=Spieler.leben;i++)
         {
         dc.DrawBitmap(bLeben,i*50-40,430);
 
@@ -1073,7 +1036,7 @@ void BasicDrawPane::render( wxDC& dc )
     dc.SetFont(wxFontInfo(12).FaceName("Distant Galaxy").Light());
 
     wxString punktstand="Punkte: ";
-    punktstand << Spiel.punkte;
+    punktstand << Spieler.punkte;
 
     dc.DrawText(punktstand, 380, 10);
 
@@ -1091,7 +1054,7 @@ void BasicDrawPane::render( wxDC& dc )
     }
 
     ///Game Over
- if (Spiel.leben<=0)
+ if (Spieler.leben<=0)
  {
     dc.SetTextForeground( *wxRED );
     dc.SetFont(wxFontInfo(28).FaceName("Distant Galaxy").Light());

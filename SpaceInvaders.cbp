@@ -78,6 +78,8 @@
 		</Unit>
 		<Unit filename="schuss.cpp" />
 		<Unit filename="schuss.h" />
+		<Unit filename="spieler.cpp" />
+		<Unit filename="spieler.h" />
 		<Unit filename="wx_pch.h">
 			<Option compile="1" />
 			<Option weight="0" />
