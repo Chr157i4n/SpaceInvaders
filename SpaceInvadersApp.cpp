@@ -82,9 +82,6 @@ tastatureingaben()
         Spiel.anzahlSchuss++;
     }
 
-
-
-
     }
 }
 
@@ -123,86 +120,39 @@ alienBewegen()
     {
         Alien[i].bewegenY(Spiel.geschwY,500);       ///bewegen
         Alien[i].bewegenX(Spiel.fensterBreite);
-
-
-
-
     }
 }
 
 trefferregistrieren()
 {
     ///Spieler Schüsse -> Aliens
-   for (int i=0;i<Spiel.anzahlSchuss;i++)
-   {
-          for (int c=0;c<Spiel.anzahlAlien;c++)
+    for (int i=0; i<Spiel.anzahlSchuss; i++)
+    {
+        for (int c=0; c<Spiel.anzahlAlien; c++)
         {
-                if (Schuss[i].trefferpruefen(&Alien[c],&Explosion[Spiel.anzahlExplosion],&Spiel, &Spieler)==true)     ///Eigentliche Trefferanalyse
+            if (Schuss[i].trefferpruefen(&Alien[c],&Explosion[Spiel.anzahlExplosion],&Spiel, &Spieler)==true)     ///Eigentliche Trefferanalyse
             {
-
-                 for (int d=i;d<Spiel.anzahlSchuss-1;d++)
-                {                                   ///Schuss löschen
-                Schuss[d]=Schuss[d+1];
-                }
-                Spiel.anzahlSchuss--;
-
-                for (int d=c;d<Spiel.anzahlAlien-1;d++)       ///Alien löschen
-                {
-                Alien[d]=Alien[d+1];
-                }
-                Spiel.anzahlAlien--;
-                 }
+                Spiel.schussLoeschen(Schuss,i);
+                Spiel.alienLoeschen(Alien,c);
+            }
 
         }
 
     }
 
+    ///Alienschüsse -> Spieler
+    for (int i=0; i<Spiel.anzahlAlienSchuss; i++)
+    {
 
-
-
-
-
-
-        ///Alienschüsse -> Spieler
-        for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+        if (Alienschuss[i].trefferpruefen(&Spieler)==true)     ///Eigentliche Trefferanalyse
         {
 
-
-            if (Alienschuss[i].trefferpruefen(&Spieler)==true)     ///Eigentliche Trefferanalyse
-            {
-
-                 for (int d=i;d<Spiel.anzahlAlienSchuss-1;d++)
-                {
-                Alienschuss[d]=Alienschuss[d+1];
-                }
-                    Spiel.anzahlAlienSchuss--;
-
-
-
-                ///Schüsse beim Spawnpunkt entfernen
-                for (int f=0;f<Spiel.anzahlAlienSchuss;f++)
-                {
-                    if ((Alienschuss[f].getX()>220) && (Alienschuss[f].getX()<280) && (Alienschuss[f].getY()>250))
-                    {
-
-                        for (int e=f;e<Spiel.anzahlAlienSchuss-1;e++)
-                        {
-                        Alienschuss[e]=Alienschuss[e+1];
-                        }
-                        Spiel.anzahlAlienSchuss--;
-                        f--;
-                    }
-                }
-
-
-            }
-
-
-
-
-
+            Spiel.alienschussLoeschen(Alienschuss,i);
+            Spiel.spawnReinigen(Alienschuss);
 
         }
+
+    }
 
 
 }
@@ -222,29 +172,29 @@ alienschiessen()
 
 endeerkennug()
 {
-    if (Spieler.leben<=0 && Spiel.spiellaeuft)
+    if (Spieler.leben<=0 && Spiel.isGameRunning())
     {
 
-        Spiel.spiellaeuft=false;
+        Spiel.stopGame();
         Spiel.highscore(&Spieler);
         Spieler.punkte=0;
         Spiel.normalerunde(&Spieler,Alien);
     }
 
-    if (Alien[Spiel.anzahlAlien-1].getY()>=360 && Spiel.spiellaeuft)
+    if (Alien[Spiel.anzahlAlien-1].getY()>=360 && Spiel.isGameRunning())
     {
         timer->stop();
-        Spiel.spiellaeuft=false;
+        Spiel.stopGame();
         Spieler.leben=0;
         Spiel.highscore(&Spieler);
         Spieler.punkte=0;
-         timer->start(Spiel.timerzeit);
+         timer->start(Spiel.getSpielgeschwindigkeit());
         Spiel.normalerunde(&Spieler,Alien);
     }
 
     if (Spiel.anzahlAlien<=0)
     {
-        Spiel.anzahlAlien=Spiel.anzahlAlienNEU;
+        Spiel.anzahlAlien=Spiel.getAliensProRunde();
         Spiel.normalerunde(&Spieler,Alien);
     }
 
@@ -259,12 +209,8 @@ explosionenentfernen()
 
         if (Explosion[i].laufzeit>25)
         {
-            for (int c=i;c<Spiel.anzahlExplosion;c++)
-            {
-            Explosion[c]=Explosion[c+1];
-            }
-            Spiel.anzahlExplosion--;
-
+           Spiel.explosionLoeschen(Explosion,i);
+            i--;
         }
 
     }
@@ -341,7 +287,7 @@ public:
 
         timer = new RenderTimer(drawPane);
         Show();
-        timer->start(Spiel.timerzeit);
+        timer->start(Spiel.getSpielgeschwindigkeit());
 
     }
     ~MyFrame()
@@ -363,24 +309,18 @@ public:
 
         if ((event.GetKeyCode()==80))           ///P        Pause
         {
-           if (Spiel.spiellaeuft) {timer->Stop(); Spiel.spiellaeuft=false; Spiel.spiellaeuft=false;}
-           else {timer->start(Spiel.timerzeit); Spiel.spiellaeuft=true; Spiel.spiellaeuft=true;}
+
+           if (Spiel.isGameRunning()) {timer->Stop(); Spiel.stopGame();}
+           else {timer->start(Spiel.getSpielgeschwindigkeit()); Spiel.resumeGame();}
         }
 
         if ((event.GetKeyCode()==82))           ///R        Neustart
         {
-            Spiel.geschwX=Spiel.geschwXNEU;
-            Spiel.geschwY=Spiel.geschwYNEU;
-            Spiel.schusswahrscheinlichkeit=Spiel.schusswahrscheinlichkeitNEU;
-            Spiel.anzahlAlien=Spiel.anzahlAlienNEU;
-            Spiel.lebenPUNKTE=Spiel.lebenNEU;
-
-            Spiel.spiellaeuft=true;
+            Spiel.werteuebernehmen();
             Spieler.punkte=0;
-            Spiel.anzahlSchuss=0;
             Spieler.darfschiessen=true;
-            Spieler.leben=Spiel.lebenNEU;
-            if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
+            Spieler.leben=Spiel.getlebenNEU();
+            if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
             Spiel.normalerunde(&Spieler,Alien);
         }
 
@@ -388,7 +328,7 @@ public:
         {
         timer->stop();
         wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
-        if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
+        if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
         }
 
         if (event.GetKeyCode()==72)            ///H        Highscore
@@ -396,7 +336,7 @@ public:
 
             timer->stop();
             Spiel.highscoreZeigen();
-            if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
+            if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
         }
 
         if ((event.GetKeyCode()==27))           ///ESC      Beenden
@@ -410,7 +350,7 @@ public:
 
             Spiel.einstellungen();
 
-            if (Spiel.spiellaeuft) timer->start(Spiel.timerzeit);
+            if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
         }
 
     }
@@ -607,10 +547,6 @@ void BasicDrawPane::render( wxDC& dc )
     dc.DrawText(wxT("Neustart mit R"), 150, 250);
 
  }
-
-
-
-
 
 
 }

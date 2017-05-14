@@ -33,8 +33,8 @@ if ( (mX>ZuPruefenderAlien->getX()) && (mX+4<ZuPruefenderAlien->getX()+30) && (m
 
                 }
 
-                if (Spiel->spiellaeuft)
-                {Spieler->punkte=Spieler->punkte+(Spiel->geschwX+Spiel->geschwY+Spiel->schusswahrscheinlichkeit-Spiel->lebenPUNKTE-Spiel->schussgeschwSpieler+Spiel->schussgeschwAliens);}               ///Punkte hinzufügen
+                if (Spiel->isGameRunning())
+                {Spiel->addPunkte(Spieler);}               ///Punkte hinzufügen
 
             return true;
             }

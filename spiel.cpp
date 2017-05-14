@@ -2,6 +2,9 @@
 #include "Spieler.h"
 #include "alien.h"
 #include <wx/textfile.h>
+#include "alienschuss.h"
+#include "schuss.h"
+#include "explosion.h"
 
 spiel::spiel()
 {
@@ -13,6 +16,21 @@ spiel::~spiel()
     //dtor
 }
 
+void spiel::addPunkte(spieler* Spieler)
+{
+    Spieler->punkte=Spieler->punkte+(geschwX+geschwY+schusswahrscheinlichkeit-lebenPUNKTE-schussgeschwSpieler+schussgeschwAliens);
+}
+
+void spiel::werteuebernehmen()
+{
+            geschwX=geschwXNEU;
+            geschwY=geschwYNEU;
+            schusswahrscheinlichkeit=schusswahrscheinlichkeitNEU;
+            anzahlAlien=anzahlAlienNEU;
+            spiellaeuft=true;
+            anzahlSchuss=0;
+            lebenPUNKTE=lebenNEU;
+}
 
 void spiel::normalerunde(spieler* Spieler, alien Alien[])
 {
@@ -41,6 +59,61 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
         }
 
 
+}
+
+spiel::alienLoeschen(alien Alien[],int zuLoeschender)
+{
+            for (int d=zuLoeschender; d<anzahlAlien-1; d++)     ///Alien löschen
+                {
+                    Alien[d]=Alien[d+1];
+                }
+                anzahlAlien--;
+}
+spiel::alienschussLoeschen(alienschuss Alienschuss[],int zuLoeschender)
+{
+ for (int d=zuLoeschender; d<anzahlAlienSchuss-1; d++)
+            {
+                Alienschuss[d]=Alienschuss[d+1];
+            }
+            anzahlAlienSchuss--;
+}
+
+spiel::schussLoeschen(schuss Schuss[],int zuLoeschender)
+{
+for (int d=zuLoeschender; d<anzahlSchuss-1; d++)
+                {
+                    ///Schuss löschen
+                    Schuss[d]=Schuss[d+1];
+                }
+                anzahlSchuss--;
+}
+
+spiel::explosionLoeschen(explosion Explosion[],int zuLoeschender)
+{
+ for (int c=zuLoeschender;c<anzahlExplosion;c++)
+            {
+            Explosion[c]=Explosion[c+1];
+            }
+            anzahlExplosion--;
+}
+
+spiel::spawnReinigen(alienschuss Alienschuss[])
+{
+
+            ///Schüsse beim Spawnpunkt entfernen
+            for (int f=0; f<anzahlAlienSchuss; f++)
+            {
+                if ((Alienschuss[f].getX()>220) && (Alienschuss[f].getX()<280) && (Alienschuss[f].getY()>250))
+                {
+
+                    for (int e=f; e<anzahlAlienSchuss-1; e++)
+                    {
+                        Alienschuss[e]=Alienschuss[e+1];
+                    }
+                    anzahlAlienSchuss--;
+                    f--;
+                }
+            }
 }
 
 spiel::highscore(spieler* Spieler)
@@ -298,9 +371,6 @@ for(int i=10;i<highscoreTXTOnline.GetLineCount();i++)
 }
 
 }
-
-
-
 
 spiel::einstellungen()
 {

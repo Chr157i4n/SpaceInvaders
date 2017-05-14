@@ -3,6 +3,9 @@
 
 class spieler;
 class alien;
+class schuss;
+class explosion;
+class alienschuss;
 
 class spiel
 {
@@ -16,6 +19,21 @@ class spiel
             einstellungen();
             highscoreZeigen();
 
+            alienLoeschen(alien ObjectList[],int zuLoeschender);
+            alienschussLoeschen(alienschuss ObjectList[],int zuLoeschender);
+            schussLoeschen(schuss ObjectList[],int zuLoeschender);
+            explosionLoeschen(explosion ObjectList[],int zuLoeschender);
+
+            spawnReinigen(alienschuss ObjectList[]);
+            void addPunkte(spieler* Spieler);
+            void werteuebernehmen();
+
+            int getSpielgeschwindigkeit(){return timerzeit;};
+            int getAliensProRunde(){return anzahlAlienNEU;};
+            int getlebenNEU(){return lebenNEU;};
+            bool isGameRunning(){return spiellaeuft;};
+            void stopGame(){if (spiellaeuft) spiellaeuft=false;};
+            void resumeGame(){if (!spiellaeuft) spiellaeuft=true;};
 
 
     int anzahlSchuss=0;
@@ -24,13 +42,19 @@ class spiel
     int anzahlExplosion=0;
 
     bool aliensbewegensichnachrechts=true;
-    bool spiellaeuft=true;
+
     HWND fensterImVordergrund;
     int fensterHoehe=500, fensterBreite=500;
     int geschwX=1,geschwY=10,schusswahrscheinlichkeit=5;
-    int geschwXNEU=1,geschwYNEU=10,schusswahrscheinlichkeitNEU=5;       ///Einstellungen
-    int lebenNEU=3,lebenPUNKTE=3,anzahlAlienNEU=20;
-    int timerzeit=15,schussgeschwAliens=2,schussgeschwSpieler=3;
+    int schussgeschwAliens=2, schussgeschwSpieler=3;
+
+    private:
+
+    bool spiellaeuft=true;
+
+    int geschwXNEU=1, geschwYNEU=10, schusswahrscheinlichkeitNEU=5;       ///Einstellungen
+    int lebenNEU=3, anzahlAlienNEU=20, lebenPUNKTE=3;
+    int timerzeit=15;
 };
 
 #endif // SPIEL_H
