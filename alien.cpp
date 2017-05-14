@@ -1,6 +1,5 @@
 #include "alien.h"
 #include "alienschuss.h"
-
 #include <ctime>
 
 alien::alien()
@@ -39,8 +38,7 @@ bool alien::schiessen(alienschuss* NaechsterSchuss,int schusswahrscheinlichkeit)
 
         if (zufall>1000-schusswahrscheinlichkeit)
             {
-            NaechsterSchuss->x=mX+14;
-            NaechsterSchuss->y=mY+30;
+            NaechsterSchuss->abschiessen(mX+14,mY+30);
             return true;
 
             }

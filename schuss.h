@@ -3,6 +3,8 @@
 
 class alien;
 class explosion;
+class spiel;
+class spieler;
 
 
 class schuss
@@ -12,7 +14,7 @@ class schuss
         virtual ~schuss();
 
         void bewegen(int schussgeschwSpieler);
-        bool trefferpruefen(alien* ZuPruefenderAlien,explosion* NaechsteExplosion,int* anzahlExplosion);
+        bool trefferpruefen(alien* ZuPruefenderAlien,explosion* NaechsteExplosion,spiel* Spiel,spieler* Spieler);
 
         int getX(){return mX;};
         int getY(){return mY;};
@@ -21,6 +23,12 @@ class schuss
         {if (x>0 && x<500) mX=x;};
         int setY(int y)
         {if (y>0 && y<500) mY=y;};
+
+        void abschiessen(int x,int y)
+        {
+         if (x>0 && x<500) mX=x;
+         if (y>0 && y<500) mY=y;
+        };
 
 
     protected:

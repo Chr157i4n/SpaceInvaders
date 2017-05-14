@@ -25,8 +25,7 @@ void spieler::schiessenerlauben(int anzahlSchuss)
 void spieler::schiessen(schuss* NaechsterSchuss)
 {
 
-    NaechsterSchuss->setX(x+12);      ///Schuss positionieren
-    NaechsterSchuss->setY(y-8);
+    NaechsterSchuss->abschiessen(mX+12,mY-8);      ///Schuss positionieren
 
     darfschiessen=false;                        ///Beides dafür, dass man nicht durchgehend schießen kann.
     schusszaehler=0;

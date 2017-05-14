@@ -12,12 +12,29 @@ class spieler
         void schiessenerlauben(int anzahlSchuss);
         void schiessen(schuss* Schuss);
 
-        int x=250-16;        //Anfangspositionen
-        int y=350;
+
         bool darfschiessen=true;
         int leben=3;
         int punkte=0;
-        wxString name="";
+
+
+
+
+        int getX(){return mX;};
+        int getY(){return mY;};
+        wxString getName(){return mName;};
+
+        int setX(int x)
+        {if (x>0 && x<500) mX=x;};
+        int setY(int y)
+        {if (y>0 && y<500) mY=y;};
+        int setName(wxString name)
+        {mName=name;};
+
+        void bewegen(int wert)
+        {
+            mX+=wert;
+        }
 
 
 
@@ -25,6 +42,11 @@ class spieler
 
     private:
         int schusszaehler=0;
+        int mX=250-16;        //Anfangspositionen
+        int mY=350;
+
+        wxString mName="";
+
 };
 
 #endif // SPIELER_H
