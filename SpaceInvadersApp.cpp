@@ -49,7 +49,7 @@ explosion Explosion[10];
 
 alienschuss Alienschuss[100];
 
-alien Alien[30];
+alien Alien[40];
 
 schuss Schuss[10];
 
@@ -132,8 +132,9 @@ trefferregistrieren()
         {
             if (Schuss[i].trefferpruefen(&Alien[c],&Explosion[Spiel.anzahlExplosion],&Spiel, &Spieler)==true)     ///Eigentliche Trefferanalyse
             {
-                Spiel.schussLoeschen(Schuss,i);
-                Spiel.alienLoeschen(Alien,c);
+                Spiel.objektLoeschen(Schuss,i,&Spiel.anzahlSchuss);
+                Spiel.objektLoeschen(Alien,c,&Spiel.anzahlAlien);
+                Spiel.aliensGeschwindigkeitErhoehen(Alien);
             }
 
         }
@@ -144,10 +145,9 @@ trefferregistrieren()
     for (int i=0; i<Spiel.anzahlAlienSchuss; i++)
     {
 
-        if (Alienschuss[i].trefferpruefen(&Spieler)==true)     ///Eigentliche Trefferanalyse
+        if (Alienschuss[i].trefferpruefen(&Spieler,&Spiel)==true)     ///Eigentliche Trefferanalyse
         {
-
-            Spiel.alienschussLoeschen(Alienschuss,i);
+            Spiel.objektLoeschen(Alienschuss,i,&Spiel.anzahlAlienSchuss);
             Spiel.spawnReinigen(Alienschuss);
 
         }
@@ -209,7 +209,7 @@ explosionenentfernen()
 
         if (Explosion[i].laufzeit>25)
         {
-           Spiel.explosionLoeschen(Explosion,i);
+            Spiel.objektLoeschen(Explosion,i,&Spiel.anzahlExplosion);
             i--;
         }
 
@@ -392,7 +392,7 @@ bool MyApp::OnInit()
 
     Spiel.fensterImVordergrund=GetForegroundWindow();
 
-    Spiel.normalerunde(&Spieler,Alien);
+    //Spiel.normalerunde(&Spieler,Alien);
     return true;
 }
 
@@ -538,7 +538,7 @@ void BasicDrawPane::render( wxDC& dc )
     }
 
     ///Game Over
- if (Spieler.leben<=0)
+ if (Spieler.leben==0)
  {
     dc.SetTextForeground( *wxRED );
     dc.SetFont(wxFontInfo(28).FaceName("Distant Galaxy").Light());
@@ -546,6 +546,15 @@ void BasicDrawPane::render( wxDC& dc )
     dc.SetFont(wxFontInfo(15).FaceName("Distant Galaxy").Light());
     dc.DrawText(wxT("Neustart mit R"), 150, 250);
 
+ }
+ if (Spieler.leben==-100)
+ {
+     SetBackgroundStyle(wxBG_STYLE_PAINT);
+    dc.SetTextForeground( *wxRED );
+    dc.SetFont(wxFontInfo(40).FaceName("Distant Galaxy").Light());
+    dc.DrawText(wxT("Space Invaders"), 20, 200);
+    dc.SetFont(wxFontInfo(20).FaceName("Distant Galaxy").Light());
+    dc.DrawText(wxT("Start mit R"), 160, 280);
  }
 
 

@@ -23,7 +23,17 @@ void alien::bewegenX(int fensterBreite)
     if (mX+breite>fensterBreite || mX<0) {mGeschwX=-1*mGeschwX;}
 }
 
-
+void alien::speedUp()
+{
+    if (mGeschwX<0)
+    {
+        mGeschwX--;
+    }
+    else
+    {
+        mGeschwX++;
+    }
+}
 
 void alien::reseten(int x,int y)
 {
@@ -36,7 +46,7 @@ bool alien::schiessen(alienschuss* NaechsterSchuss,int schusswahrscheinlichkeit)
 {
      int zufall= std::rand()%1000+1;
 
-        if (zufall>1000-schusswahrscheinlichkeit)
+        if (zufall>998-schusswahrscheinlichkeit)
             {
             NaechsterSchuss->abschiessen(mX+14,mY+30);
             return true;

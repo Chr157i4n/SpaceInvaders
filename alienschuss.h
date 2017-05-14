@@ -2,6 +2,7 @@
 #define ALIENSCHUSS_H
 
 class spieler;
+class spiel;
 
 class alienschuss
 {
@@ -11,7 +12,7 @@ class alienschuss
 
         bewegen(int schussgeschwAliens);
 
-         bool trefferpruefen(spieler* ZuPruefenderSpieler);
+         bool trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel);
 
         int getX(){return mX;};
         int getY(){return mY;};

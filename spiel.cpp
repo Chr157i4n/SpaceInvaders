@@ -61,40 +61,15 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
 
 }
 
-spiel::alienLoeschen(alien Alien[],int zuLoeschender)
+spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
 {
-            for (int d=zuLoeschender; d<anzahlAlien-1; d++)     ///Alien löschen
-                {
-                    Alien[d]=Alien[d+1];
-                }
-                anzahlAlien--;
-}
-spiel::alienschussLoeschen(alienschuss Alienschuss[],int zuLoeschender)
-{
- for (int d=zuLoeschender; d<anzahlAlienSchuss-1; d++)
-            {
-                Alienschuss[d]=Alienschuss[d+1];
-            }
-            anzahlAlienSchuss--;
-}
-
-spiel::schussLoeschen(schuss Schuss[],int zuLoeschender)
-{
-for (int d=zuLoeschender; d<anzahlSchuss-1; d++)
-                {
-                    ///Schuss löschen
-                    Schuss[d]=Schuss[d+1];
-                }
-                anzahlSchuss--;
-}
-
-spiel::explosionLoeschen(explosion Explosion[],int zuLoeschender)
-{
- for (int c=zuLoeschender;c<anzahlExplosion;c++)
-            {
-            Explosion[c]=Explosion[c+1];
-            }
-            anzahlExplosion--;
+    if (anzahlAlien %5 ==0)
+    {
+        for (int i=0; i<anzahlAlien; i++)
+        {
+            Alien[i].speedUp();
+        }
+    }
 }
 
 spiel::spawnReinigen(alienschuss Alienschuss[])

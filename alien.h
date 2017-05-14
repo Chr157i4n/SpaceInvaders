@@ -14,6 +14,8 @@ class alien
         bool schiessen(alienschuss* NaechsterSchuss,int schusswahrscheinlichkeit);
         void reseten(int x,int y);
 
+        void speedUp();
+
         int getX(){return mX;};
         int getY(){return mY;};
 
@@ -22,7 +24,7 @@ class alien
     private:
         int mX;
         int mY;
-        int mGeschwX=1;
+        int mGeschwX=2;
         int breite=40;
 };
 

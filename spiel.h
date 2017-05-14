@@ -7,6 +7,8 @@ class schuss;
 class explosion;
 class alienschuss;
 
+
+
 class spiel
 {
      public:
@@ -19,17 +21,26 @@ class spiel
             einstellungen();
             highscoreZeigen();
 
-            alienLoeschen(alien ObjectList[],int zuLoeschender);
-            alienschussLoeschen(alienschuss ObjectList[],int zuLoeschender);
-            schussLoeschen(schuss ObjectList[],int zuLoeschender);
-            explosionLoeschen(explosion ObjectList[],int zuLoeschender);
+            aliensGeschwindigkeitErhoehen(alien Alien[]);
+
+            template< class T >
+            objektLoeschen(T Objekt[],int zuLoeschender, int* anzahlObjekte)
+            {
+
+
+                for (int d=zuLoeschender; d<*anzahlObjekte-1; d++)
+                {
+                    Objekt[d]=Objekt[d+1];
+                }
+                (*anzahlObjekte)--;
+            }
 
             spawnReinigen(alienschuss ObjectList[]);
             void addPunkte(spieler* Spieler);
             void werteuebernehmen();
 
             int getSpielgeschwindigkeit(){return timerzeit;};
-            int getAliensProRunde(){return anzahlAlienNEU;};
+            int getAliensProRunde(){anzahlAlienNEU++; return anzahlAlienNEU;};
             int getlebenNEU(){return lebenNEU;};
             bool isGameRunning(){return spiellaeuft;};
             void stopGame(){if (spiellaeuft) spiellaeuft=false;};

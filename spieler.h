@@ -14,7 +14,7 @@ class spieler
 
 
         bool darfschiessen=true;
-        int leben=3;
+        int leben=-100;
         int punkte=0;
 
 
