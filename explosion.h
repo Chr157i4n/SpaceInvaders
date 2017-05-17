@@ -1,19 +1,27 @@
 #ifndef EXPLOSION_H
 #define EXPLOSION_H
+#include "objekt.h"
 
 
-class explosion
+
+class explosion : public objekt
 {
     public:
         explosion();
         virtual ~explosion();
-        int x;
-        int y;
-        int laufzeit;
+
+        int getLaufzeit(){return mLaufzeit;};
+
+        int setLaufzeit(int laufzeit)
+        {if (laufzeit>0) mLaufzeit=laufzeit;};
+
+        explodieren(int x,int Y);
+        bool ueberpruefen();
 
     protected:
 
     private:
+        int mLaufzeit;
 };
 
 #endif // EXPLOSION_H

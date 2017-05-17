@@ -1,10 +1,11 @@
 #ifndef ALIENSCHUSS_H
 #define ALIENSCHUSS_H
+#include "objekt.h"
 
 class spieler;
 class spiel;
 
-class alienschuss
+class alienschuss : public objekt
 {
     public:
         alienschuss();
@@ -12,10 +13,9 @@ class alienschuss
 
         bewegen(int schussgeschwAliens);
 
-         bool trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel);
+         int trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel);
 
-        int getX(){return mX;};
-        int getY(){return mY;};
+
 
         void abschiessen(int x,int y)
         {
@@ -26,7 +26,7 @@ class alienschuss
     protected:
 
     private:
-        int mX,mY;
+
 };
 
 #endif // ALIENSCHUSS_H

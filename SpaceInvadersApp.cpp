@@ -1,6 +1,7 @@
 #include <wx/dcbuffer.h>
 #include <wx/textfile.h>
 #include <thread>
+#include <wx/sound.h>
 
 #include "alien.h"
 #include "explosion.h"
@@ -8,23 +9,23 @@
 #include "schuss.h"
 #include "spieler.h"
 #include "spiel.h"
+#include "objekt.h"
+
+#include <SFML/Audio.hpp>
+
+
 
 class BasicDrawPane;
 
 class RenderTimer : public wxTimer
 {
 BasicDrawPane* pane;
-
-
-
-
 public:
     RenderTimer(BasicDrawPane* pane);
     void Notify();
     void start(int timerzeit);
     void stop();
 };
-
 
 RenderTimer::RenderTimer(BasicDrawPane* pane) : wxTimer()
 {
@@ -43,25 +44,21 @@ RenderTimer* timer;
 
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
-
+wxSound* sExplosion = new wxSound( "music\\explosion.wav" );
+wxSound* sSchuss = new wxSound("music\\laser.wav" );
+wxSound* sHintergrund = new wxSound("music\\SpaceInvadersSoundtrack.wav" );
+bool mute=false;
 
 explosion Explosion[10];
-
 alienschuss Alienschuss[100];
-
 alien Alien[40];
-
 schuss Schuss[10];
-
 spieler Spieler;
-
 spiel Spiel;
-
-
 
 tastatureingaben()
 {
-    if (Spiel.fensterImVordergrund==GetForegroundWindow())
+    if (Spiel.isGameInForeground() && Spiel.isGameRunning())
     {
 
     if((wxGetKeyState((wxKeyCode)'a') || wxGetKeyState((wxKeyCode)'A') || wxGetKeyState(WXK_LEFT)) && (Spieler.getX()-5>=0) )
@@ -70,16 +67,17 @@ tastatureingaben()
 
     }
 
-    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (Spieler.getX()+48<=Spiel.fensterBreite))
+    if ((wxGetKeyState((wxKeyCode)'d') || wxGetKeyState((wxKeyCode)'D') || wxGetKeyState(WXK_RIGHT)) && (Spieler.getX()+48<=Spiel.getBreite()))
     {
         Spieler.bewegen(+2);
     }
 
-    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (Spieler.darfschiessen==true))
+    if ((wxGetKeyState((wxKeyCode)' ') || wxGetKeyState((wxKeyCode)'w') || wxGetKeyState((wxKeyCode)'W') || wxGetKeyState(WXK_UP)) && (Spieler.ShootingAllowed()))
     {
 
-        Spieler.schiessen(&Schuss[Spiel.anzahlSchuss]);
-        Spiel.anzahlSchuss++;
+        Spieler.schiessen(&Schuss[Spiel.getAnzahl().Schuss]);
+        Spiel.setAnzahlSchuss(Spiel.getAnzahl().Schuss+1);
+        if (!mute) sSchuss->Play();
     }
 
     }
@@ -87,27 +85,19 @@ tastatureingaben()
 
 schussloeschen()
 {
-  for (int i=0;i<Spiel.anzahlSchuss;i++)
+  for (int i=0;i<Spiel.getAnzahl().Schuss;i++)
         {
           if (Schuss[i].getY()<0)       ///Schuss oben raus
           {
-                for (int c=i;c<Spiel.anzahlSchuss-1;c++)
-                {
-                Schuss[c]=Schuss[c+1];
-                }
-                Spiel.anzahlSchuss=Spiel.anzahlSchuss-1;
+               Spiel.objektLoeschen(Schuss,i,&Spiel,'s');
           }
         }
 
-       for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
+       for (int i=0;i<Spiel.getAnzahl().Alienschuss;i++)
         {
-          if (Alienschuss[i].getY()>Spiel.fensterHoehe)       ///Alienschuss unten raus
+          if (Alienschuss[i].getY()>Spiel.getHoehe())       ///Alienschuss unten raus
           {
-                for (int c=i;c<Spiel.anzahlAlienSchuss-1;c++)
-                {
-                Alienschuss[c]=Alienschuss[c+1];
-                }
-                Spiel.anzahlAlienSchuss--;
+                Spiel.objektLoeschen(Alienschuss,i,&Spiel,'l');
           }
         }
 
@@ -116,40 +106,39 @@ schussloeschen()
 
 alienBewegen()
 {
-    for (int i=0; i<Spiel.anzahlAlien;i++)
+    for (int i=0; i<Spiel.getAnzahl().Alien;i++)
     {
-        Alien[i].bewegenY(Spiel.geschwY,500);       ///bewegen
-        Alien[i].bewegenX(Spiel.fensterBreite);
+        Alien[i].bewegenY(Spiel.getAlienGeschw().y,500);       ///bewegen
+        Alien[i].bewegenX(Spiel.getBreite());
     }
 }
 
 trefferregistrieren()
 {
     ///Spieler Schüsse -> Aliens
-    for (int i=0; i<Spiel.anzahlSchuss; i++)
+    for (int i=0; i<Spiel.getAnzahl().Schuss; i++)
     {
-        for (int c=0; c<Spiel.anzahlAlien; c++)
-        {
-            if (Schuss[i].trefferpruefen(&Alien[c],&Explosion[Spiel.anzahlExplosion],&Spiel, &Spieler)==true)     ///Eigentliche Trefferanalyse
+            int c=Schuss[i].trefferpruefen(Alien,&Explosion[Spiel.getAnzahl().Explosion],&Spiel, &Spieler);        ///Eigentliche Trefferanalyse
+            if ( c != -1 )
             {
-                Spiel.objektLoeschen(Schuss,i,&Spiel.anzahlSchuss);
-                Spiel.objektLoeschen(Alien,c,&Spiel.anzahlAlien);
+                Spiel.objektLoeschen(Schuss,i,&Spiel,'s');
+                Spiel.objektLoeschen(Alien,c,&Spiel,'a');
                 Spiel.aliensGeschwindigkeitErhoehen(Alien);
+                i--;
+                if (!mute) sExplosion->Play();
             }
-
-        }
 
     }
 
     ///Alienschüsse -> Spieler
-    for (int i=0; i<Spiel.anzahlAlienSchuss; i++)
+    for (int i=0; i<Spiel.getAnzahl().Alienschuss; i++)
     {
-
-        if (Alienschuss[i].trefferpruefen(&Spieler,&Spiel)==true)     ///Eigentliche Trefferanalyse
+        int c = Alienschuss[i].trefferpruefen(&Spieler,&Spiel);     ///Eigentliche Trefferanalyse
+        if (c != -1)
         {
-            Spiel.objektLoeschen(Alienschuss,i,&Spiel.anzahlAlienSchuss);
+            Spiel.objektLoeschen(Alienschuss,i,&Spiel,'l');
             Spiel.spawnReinigen(Alienschuss);
-
+            i--;
         }
 
     }
@@ -159,12 +148,12 @@ trefferregistrieren()
 
 alienschiessen()
 {
-    for (int i=0;i<Spiel.anzahlAlien;i++)
+    for (int i=0;i<Spiel.getAnzahl().Alien;i++)
     {
-        if (Spiel.anzahlAlienSchuss<100)   ///Schiessen
+        if (Spiel.getAnzahl().Alienschuss<100)   ///Schiessen
         {
-            if (Alien[i].schiessen(&Alienschuss[Spiel.anzahlAlienSchuss],Spiel.schusswahrscheinlichkeit)==true)
-            {Spiel.anzahlAlienSchuss++;}
+            if (Alien[i].schiessen(&Alienschuss[Spiel.getAnzahl().Alienschuss],Spiel.getschusswahrscheinlichkeit())==true)
+            {Spiel.setAnzahlAlienschuss(Spiel.getAnzahl().Alienschuss+1);}
         }
 
     }
@@ -172,29 +161,29 @@ alienschiessen()
 
 endeerkennug()
 {
-    if (Spieler.leben<=0 && Spiel.isGameRunning())
+    if (Spieler.getLeben()<=0 && Spiel.isGameRunning())
     {
 
         Spiel.stopGame();
         Spiel.highscore(&Spieler);
-        Spieler.punkte=0;
+        Spieler.setPunkte(0);
         Spiel.normalerunde(&Spieler,Alien);
     }
 
-    if (Alien[Spiel.anzahlAlien-1].getY()>=360 && Spiel.isGameRunning())
+    if (Alien[Spiel.getAnzahl().Alien-1].getY()>=360 && Spiel.isGameRunning())
     {
-        timer->stop();
+
         Spiel.stopGame();
-        Spieler.leben=0;
+        Spieler.setLeben(0);
         Spiel.highscore(&Spieler);
-        Spieler.punkte=0;
-         timer->start(Spiel.getSpielgeschwindigkeit());
+        Spieler.setPunkte(0);
+        timer->start(Spiel.getSpielgeschwindigkeit());
         Spiel.normalerunde(&Spieler,Alien);
     }
 
-    if (Spiel.anzahlAlien<=0)
+    if (Spiel.getAnzahl().Alien<=0)
     {
-        Spiel.anzahlAlien=Spiel.getAliensProRunde();
+        Spiel.setAnzahlAlien(Spiel.getAliensProRunde());
         Spiel.normalerunde(&Spieler,Alien);
     }
 
@@ -203,34 +192,35 @@ endeerkennug()
 
 explosionenentfernen()
 {
-    for (int i=0;i<Spiel.anzahlExplosion;i++)
+    for (int i=0;i<Spiel.getAnzahl().Explosion;i++)
     {
-        Explosion[i].laufzeit++;
 
-        if (Explosion[i].laufzeit>25)
+        if (Explosion[i].ueberpruefen()==true)
         {
-            Spiel.objektLoeschen(Explosion,i,&Spiel.anzahlExplosion);
+            Spiel.objektLoeschen(Explosion,i,&Spiel,'e');
             i--;
         }
+
 
     }
 }
 
 schiessenerlauben()
 {
-    Spieler.schiessenerlauben(Spiel.anzahlSchuss);
+    Spieler.schiessenerlauben(Spiel.getAnzahl().Schuss);
+
 }
 
 schussbewegen()
 {
-    for (int i=0; i<Spiel.anzahlSchuss;i++)
+    for (int i=0; i<Spiel.getAnzahl().Schuss;i++)
     {
-        Schuss[i].bewegen(Spiel.schussgeschwSpieler);
+        Schuss[i].bewegen(Spiel.getschussgeschwSpieler());
     }
 
-    for (int i=0; i<Spiel.anzahlAlienSchuss;i++)
+    for (int i=0; i<Spiel.getAnzahl().Alienschuss;i++)
     {
-        Alienschuss[i].bewegen(Spiel.schussgeschwAliens);
+        Alienschuss[i].bewegen(Spiel.getschussgeschwAliens());
     }
 }
 
@@ -303,7 +293,7 @@ public:
     }
     void KeyDown(wxKeyEvent& event)
     {
-    if (Spiel.fensterImVordergrund==GetForegroundWindow())
+    if (Spiel.isGameInForeground())
     {
 
 
@@ -317,9 +307,9 @@ public:
         if ((event.GetKeyCode()==82))           ///R        Neustart
         {
             Spiel.werteuebernehmen();
-            Spieler.punkte=0;
-            Spieler.darfschiessen=true;
-            Spieler.leben=Spiel.getlebenNEU();
+            Spieler.setPunkte(0);
+            Spieler.pauseShooting();
+            Spieler.setLeben(Spiel.getlebenNEU());
             if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
             Spiel.normalerunde(&Spieler,Alien);
         }
@@ -344,13 +334,19 @@ public:
            Close();
         }
 
-        if ((event.GetKeyCode()==69))         ///E        Einstellungen
+        if (event.GetKeyCode()==69)         ///E        Einstellungen
         {
             timer->stop();
 
             Spiel.einstellungen();
 
             if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
+        }
+
+        if (event.GetKeyCode()==77)
+        {
+           if (!mute) {mute=true;} else {mute=false;}
+           if (mute) {sHintergrund->Stop();} else {sHintergrund->Play();}
         }
 
     }
@@ -373,7 +369,7 @@ END_EVENT_TABLE()
 bool MyApp::OnInit()
 {
 
-    std::srand(std::time(0));   //Zufallszahlen generieren
+    std::srand(std::time(0));   ///Zufallszahlen generieren
 
 
     ///Bilder Laden
@@ -382,15 +378,27 @@ bool MyApp::OnInit()
     bRaumschiff.LoadFile("Images\\Raumschiff.png",wxBITMAP_TYPE_PNG);
     bSchuss.LoadFile("Images\\Munition.png",wxBITMAP_TYPE_PNG);
     bAlienschuss.LoadFile("Images\\Alienmunition.png",wxBITMAP_TYPE_PNG);
-    bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);
+    bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);                     ///Alle Bilder werden geladen
     bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
     bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
 
 
-    frame = new MyFrame();
-    frame->Show();
 
-    Spiel.fensterImVordergrund=GetForegroundWindow();
+
+    frame = new MyFrame();             ///Fenster wird erstellt
+    frame->Show();                      ///Fenster wird angezeigt
+
+    Spiel.saveForegroundWindow();                            ///Speichert (hoffentlich) SpaceInvaders, damit Tastatureingaben nur
+                                                            ///funktionieren, wenn SpaceInvaders im Vordergrund ist
+
+
+    sHintergrund->Play(wxSOUND_ASYNC|wxSOUND_LOOP);         ///Spielt Hintergrundmusik ab
+
+   // sf::SoundBuffer buffer;
+   // buffer.loadFromFile("music\\SpaceInvadersSoundtrack.wav");
+
+
+
 
     //Spiel.normalerunde(&Spieler,Alien);
     return true;
@@ -410,25 +418,25 @@ void RenderTimer::Notify()
 {
     std::thread t0(schussbewegen);
     std::thread t1(schiessenerlauben);
-    std::thread t2(tastatureingaben);
-    std::thread t3(schussloeschen);
+    std::thread t2(tastatureingaben);               ///Startet alle Funktionen als Threads
+    std::thread t3(schussloeschen);                 ///Threads können gleichzeitig ablaufen
     std::thread t4(trefferregistrieren);
     std::thread t5(explosionenentfernen);
     std::thread t6(alienBewegen);
 
+                ///Bis hier laufen alle Funktionen parallel
+    t0.join();
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();                                  ///Hier wird auf alle Funktionen gewartet
+    t5.join();
+    t6.join();
 
-    if (t0.joinable() || Spieler.leben==0) {t0.join();}
-    if (t1.joinable() || Spieler.leben==0) {t1.join();}
-    if (t2.joinable() || Spieler.leben==0) {t2.join();}
-    if (t3.joinable() || Spieler.leben==0) {t3.join();}
-    if (t4.joinable() || Spieler.leben==0) {t4.join();}
-    if (t5.joinable() || Spieler.leben==0) {t5.join();}
-    if (t6.joinable() || Spieler.leben==0) {t6.join();}
-
-    endeerkennug();
+    endeerkennug();     ///bei den zwei gab es Probleme als Threads
     alienschiessen();
 
-    pane->Refresh();
+    pane->Refresh();       ///Das Bild wird neu gemalt
 
 }
 
@@ -447,12 +455,6 @@ void BasicDrawPane::paintEvent(wxPaintEvent& evt)
     render(dc);
 }
 
-void BasicDrawPane::paintNow()
-{
-
-    wxBufferedPaintDC dc(this);
-    render(dc);
-}
 
 void BasicDrawPane::render( wxDC& dc )
 {
@@ -460,85 +462,79 @@ void BasicDrawPane::render( wxDC& dc )
 
     ///Rendering während das Spiel läuft
 
-    if (Spieler.leben>0)
+    if (Spiel.isGameRunning())
     {
 
-    SetBackgroundStyle(wxBG_STYLE_PAINT);
+        SetBackgroundStyle(wxBG_STYLE_PAINT);
 
-    ///dc.SetBackground( *wxBLACK_BRUSH );
-   //dc.SetBackgroundMode(1);
-    ///dc.Clear();
-
-            if (bHintergrund.IsOk())
-            {
-            dc.DrawBitmap(bHintergrund,0,0);
-
-            }
-
-            if (bSchuss.IsOk())
-            {
-                for (int i=0;i<Spiel.anzahlSchuss;i++)
-                {
-                dc.DrawBitmap(bSchuss,Schuss[i].getX(),Schuss[i].getY());
-                }
-            }
-
-            if (bSchuss.IsOk())
-            {
-                    for (int i=0;i<Spiel.anzahlAlienSchuss;i++)
-                    {
-                    dc.DrawBitmap(bAlienschuss,Alienschuss[i].getX(),Alienschuss[i].getY());
-                    }
-            }
-
-
-            if (bRaumschiff.IsOk())
-            {
-            dc.DrawBitmap(bRaumschiff,Spieler.getX(),Spieler.getY());
-            }
-
-
-            if (bAlien.IsOk())
-            {
-                for (int i=0;i<Spiel.anzahlAlien;i++)
-                {
-                dc.DrawBitmap(bAlien,Alien[i].getX(),Alien[i].getY());
-                }
-
-        for (int i=1; i<=Spieler.leben;i++)
+        if (bHintergrund.IsOk())
         {
-        dc.DrawBitmap(bLeben,i*50-40,430);
+            dc.DrawBitmap(bHintergrund,0,0);
 
         }
 
-
-
-            }
-
-             ///Punktestand
-    dc.SetTextForeground( *wxRED );
-    dc.SetFont(wxFontInfo(12).FaceName("Distant Galaxy").Light());
-
-    wxString punktstand="Punkte: ";
-    punktstand << Spieler.punkte;
-
-    dc.DrawText(punktstand, 380, 10);
-
-
-
-            if (bExplosion.IsOk())
+        if (bSchuss.IsOk())
+        {
+            for (int i=0; i<Spiel.getAnzahl().Schuss; i++)
             {
-                    for (int i=0;i<Spiel.anzahlExplosion;i++)
-                    {
-                    dc.DrawBitmap(bExplosion,Explosion[i].x,Explosion[i].y);
-                    }
+                dc.DrawBitmap(bSchuss,Schuss[i].getX(),Schuss[i].getY());
+            }
+        }
+
+        if (bSchuss.IsOk())
+        {
+            for (int i=0; i<Spiel.getAnzahl().Alienschuss; i++)
+            {
+                dc.DrawBitmap(bAlienschuss,Alienschuss[i].getX(),Alienschuss[i].getY());
+            }
+        }
+
+
+        if (bRaumschiff.IsOk())
+        {
+            dc.DrawBitmap(bRaumschiff,Spieler.getX(),Spieler.getY());
+        }
+
+
+        if (bAlien.IsOk())
+        {
+            for (int i=0; i<Spiel.getAnzahl().Alien; i++)
+            {
+                dc.DrawBitmap(bAlien,Alien[i].getX(),Alien[i].getY());
             }
 
+            for (int i=1; i<=Spieler.getLeben(); i++)
+            {
+                dc.DrawBitmap(bLeben,i*50-40,430);
+            }
+
+
+
+        }
+
+        ///Punktestand
+        dc.SetTextForeground( *wxRED );
+        dc.SetFont(wxFontInfo(12).FaceName("Distant Galaxy").Light());
+
+        wxString punktstand="Punkte: ";
+        punktstand << Spieler.getPunkte();
+
+        dc.DrawText(punktstand, 380, 10);
+
+
+
+        if (bExplosion.IsOk())
+        {
+            for (int i=0; i<Spiel.getAnzahl().Explosion; i++)
+            {
+                dc.DrawBitmap(bExplosion,Explosion[i].getX(),Explosion[i].getY());
+            }
+        }
 
     }
 
     ///Game Over
- if (Spieler.leben==0)
+ if (!Spiel.isGameRunning() && Spieler.getLeben()!=-100)
  {
     dc.SetTextForeground( *wxRED );
     dc.SetFont(wxFontInfo(28).FaceName("Distant Galaxy").Light());
@@ -547,9 +543,11 @@ void BasicDrawPane::render( wxDC& dc )
     dc.DrawText(wxT("Neustart mit R"), 150, 250);
 
  }
- if (Spieler.leben==-100)
+
+ ///Spielstart Anzeige
+ if (Spieler.getLeben()==-100)
  {
-     SetBackgroundStyle(wxBG_STYLE_PAINT);
+    SetBackgroundStyle(wxBG_STYLE_PAINT);
     dc.SetTextForeground( *wxRED );
     dc.SetFont(wxFontInfo(40).FaceName("Distant Galaxy").Light());
     dc.DrawText(wxT("Space Invaders"), 20, 200);

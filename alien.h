@@ -1,9 +1,10 @@
 #ifndef ALIEN_H
 #define ALIEN_H
+#include "objekt.h"
 
 class alienschuss;
 
-class alien
+class alien : public objekt
 {
     public:
         alien();
@@ -16,14 +17,12 @@ class alien
 
         void speedUp();
 
-        int getX(){return mX;};
-        int getY(){return mY;};
+
 
     protected:
 
     private:
-        int mX;
-        int mY;
+
         int mGeschwX=2;
         int breite=40;
 };

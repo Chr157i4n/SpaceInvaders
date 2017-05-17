@@ -4,7 +4,8 @@
 
 alienschuss::alienschuss()
 {
-    //ctor
+    mHoehe=9;
+    mBreite=3;
 }
 
 alienschuss::~alienschuss()
@@ -18,19 +19,19 @@ alienschuss::bewegen(int schussgeschwAliens)
 }
 
 
-bool alienschuss::trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel)
+int alienschuss::trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel)
 {
 
-    if ( (mX>ZuPruefenderSpieler->getX()) && (mX+4<ZuPruefenderSpieler->getX()+30) && (mY>ZuPruefenderSpieler->getY()) & (mY+9<ZuPruefenderSpieler->getY()+30) )
+    if ( (mX>ZuPruefenderSpieler->getX()) && (mX+mBreite<ZuPruefenderSpieler->getX()+ZuPruefenderSpieler->getBreite()) && (mY>ZuPruefenderSpieler->getY()) & (mY+mBreite<ZuPruefenderSpieler->getY()+ZuPruefenderSpieler->getHoehe()) )
             {
                 if (Spiel->isGameRunning())
                 {
-                ZuPruefenderSpieler->setX(250-16);
-                ZuPruefenderSpieler->leben--;
+                ZuPruefenderSpieler->setX(Spiel->getBreite()/2-ZuPruefenderSpieler->getBreite()/2);
+                ZuPruefenderSpieler->setLeben(ZuPruefenderSpieler->getLeben()-1);
                 }
 
-            return true;
+            return 1;
             }
-        return false;
+        return -1;
 
 }

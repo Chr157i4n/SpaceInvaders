@@ -5,6 +5,8 @@
 alien::alien()
 {
     std::srand(std::time(0));
+    mHoehe=30;
+    mBreite=30;
 }
 
 alien::~alien()

@@ -8,7 +8,7 @@
 
 spiel::spiel()
 {
-    //ctor
+
 }
 
 spiel::~spiel()
@@ -16,19 +16,27 @@ spiel::~spiel()
     //dtor
 }
 
+bool spiel::isGameInForeground()
+{
+    return (fensterImVordergrund==GetForegroundWindow());
+}
+
 void spiel::addPunkte(spieler* Spieler)
 {
-    Spieler->punkte=Spieler->punkte+(geschwX+geschwY+schusswahrscheinlichkeit-lebenPUNKTE-schussgeschwSpieler+schussgeschwAliens);
+    Spieler->addPunkte(Spieler->getPunkte()+(geschwAlien.x+geschwAlien.y+schusswahrscheinlichkeit-lebenPUNKTE-schussgeschwSpieler+schussgeschwAliens));
 }
+
 
 void spiel::werteuebernehmen()
 {
-            geschwX=geschwXNEU;
-            geschwY=geschwYNEU;
+            schussgeschwSpieler=schussgeschwSpielerNEU;
+            geschwAlien.x=geschwXNEU;
+            geschwAlien.y=geschwYNEU;
             schusswahrscheinlichkeit=schusswahrscheinlichkeitNEU;
-            anzahlAlien=anzahlAlienNEU;
+            anzahlAlienNEU=20;
+            Anzahl.Alien=anzahlAlienNEU;
             spiellaeuft=true;
-            anzahlSchuss=0;
+            Anzahl.Schuss=0;
             lebenPUNKTE=lebenNEU;
 }
 
@@ -36,16 +44,16 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
 {
 
 
-    anzahlAlienSchuss=0;
-
-    anzahlSchuss=0;
+    Anzahl.Alienschuss=0;
+    Anzahl.Explosion=0;
+    Anzahl.Schuss=0;
     Spieler->setX(250-16);
 
 
         int spaltealien=0;
         int reihealien=1;
 
-        for (int i=0;i<anzahlAlien;i++)
+        for (int i=0;i<Anzahl.Alien;i++)
         {
            spaltealien++;
 
@@ -63,9 +71,9 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
 
 spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
 {
-    if (anzahlAlien %5 ==0)
+    if (Anzahl.Alien %5 ==0)
     {
-        for (int i=0; i<anzahlAlien; i++)
+        for (int i=0; i<Anzahl.Alien; i++)
         {
             Alien[i].speedUp();
         }
@@ -76,16 +84,16 @@ spiel::spawnReinigen(alienschuss Alienschuss[])
 {
 
             ///Schüsse beim Spawnpunkt entfernen
-            for (int f=0; f<anzahlAlienSchuss; f++)
+            for (int f=0; f<Anzahl.Alienschuss; f++)
             {
                 if ((Alienschuss[f].getX()>220) && (Alienschuss[f].getX()<280) && (Alienschuss[f].getY()>250))
                 {
 
-                    for (int e=f; e<anzahlAlienSchuss-1; e++)
+                    for (int e=f; e<Anzahl.Alienschuss-1; e++)
                     {
                         Alienschuss[e]=Alienschuss[e+1];
                     }
-                    anzahlAlienSchuss--;
+                    Anzahl.Alienschuss--;
                     f--;
                 }
             }
@@ -125,7 +133,7 @@ spiel::highscore(spieler* Spieler)
     do {
 
 
-        if ((Spieler->punkte>wxAtoi(highscore) || highscore=="")    && !hs && Spieler->punkte>0)
+        if ((Spieler->getPunkte()>wxAtoi(highscore) || highscore=="")    && !hs && Spieler->getPunkte()>0)
             {
 
 
@@ -134,15 +142,15 @@ spiel::highscore(spieler* Spieler)
                 {
                     dlg->Destroy();
                     wxString punktstand;
-                    punktstand << Spieler->punkte;
+                    punktstand << Spieler->getPunkte();
 
 
 
-                        if (Spieler->punkte<100)
+                        if (Spieler->getPunkte()<100)
                         {
                         punktstand=punktstand+" ";
                         }
-                        if (Spieler->punkte<1000)
+                        if (Spieler->getPunkte()<1000)
                         {
                         punktstand=punktstand+" ";
                         }
@@ -179,7 +187,7 @@ spiel::highscore(spieler* Spieler)
 
     } while(!highscoreTXT.Eof() && platz<10);
 
-    if (platz<10 && !hs && Spieler->punkte>0)
+    if (platz<10 && !hs && Spieler->getPunkte()>0)
     {
 
             wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Gib bitte deinen Namen ein"),wxT("Highscore"));
@@ -187,12 +195,12 @@ spiel::highscore(spieler* Spieler)
                 {
                     dlg->Destroy();
             wxString punktstand;
-            punktstand << Spieler->punkte;                   ///Punktzahl ganz am ende
-            if (Spieler->punkte<100)
+            punktstand << Spieler->getPunkte();                   ///Punktzahl ganz am ende
+            if (Spieler->getPunkte()<100)
             {
             punktstand=punktstand+" ";
             }
-            if (Spieler->punkte<1000)
+            if (Spieler->getPunkte()<1000)
             {
             punktstand=punktstand+" ";
             }
@@ -260,21 +268,21 @@ if (!chanceled){
     do {
 
 
-        if ((Spieler->punkte>wxAtoi(highscore) || highscore=="")    && !hso && Spieler->punkte>0)
+        if ((Spieler->getPunkte()>wxAtoi(highscore) || highscore=="")    && !hso && Spieler->getPunkte()>0)
             {
 
 
 
                     wxString punktstand;
-                    punktstand << Spieler->punkte;
+                    punktstand << Spieler->getPunkte();
 
 
 
-                        if (Spieler->punkte<100)
+                        if (Spieler->getPunkte()<100)
                         {
                         punktstand=punktstand+" ";
                         }
-                        if (Spieler->punkte<1000)
+                        if (Spieler->getPunkte()<1000)
                         {
                         punktstand=punktstand+" ";
                         }
@@ -310,15 +318,15 @@ if (!chanceled){
     } while(!highscoreTXTOnline.Eof() && platz<10);
 
 
-    if (platz<10 && !hso && Spieler->punkte>0)
+    if (platz<10 && !hso && Spieler->getPunkte()>0)
     {
             wxString punktstand;
-            punktstand << Spieler->punkte;                   ///Punktzahl ganz am ende
-            if (Spieler->punkte<100)
+            punktstand << Spieler->getPunkte();                   ///Punktzahl ganz am ende
+            if (Spieler->getPunkte()<100)
             {
             punktstand=punktstand+" ";
             }
-            if (Spieler->punkte<1000)
+            if (Spieler->getPunkte()<1000)
             {
             punktstand=punktstand+" ";
             }
@@ -420,11 +428,14 @@ spiel::einstellungen()
                  int tmp =  wxAtoi(dlg5->GetValue());
                  if (tmp>0 && tmp<=10)
                  {
-                    schussgeschwSpieler=tmp;
+                    schussgeschwSpielerNEU=tmp;
                  }
 
                 }
                 dlg4->Destroy();
+
+
+
 }
 
 spiel::highscoreZeigen()

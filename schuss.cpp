@@ -6,7 +6,8 @@
 
 schuss::schuss()
 {
-    //ctor
+    mHoehe=9;
+    mBreite=4;
 }
 
 schuss::~schuss()
@@ -19,24 +20,24 @@ void schuss::bewegen(int schussgeschwSpieler)
     mY=mY-schussgeschwSpieler;
 }
 
-bool schuss::trefferpruefen(alien* ZuPruefenderAlien,explosion* NaechsteExplosion,spiel* Spiel,spieler* Spieler)
+int schuss::trefferpruefen(alien Alien[],explosion* NaechsteExplosion,spiel* Spiel,spieler* Spieler)
 {
-
-if ( (mX>ZuPruefenderAlien->getX()) && (mX+4<ZuPruefenderAlien->getX()+30) && (mY>ZuPruefenderAlien->getY()) & (mY+9<ZuPruefenderAlien->getY()+30) )
+for (int c=0; c<Spiel->getAnzahl().Alien; c++)
+        {
+if ( (mX>Alien[c].getX()) && (mX+mBreite<Alien[c].getX()+Alien[c].getBreite()) && (mY>Alien[c].getY()) & (mY+mHoehe<Alien[c].getY()+Alien[c].getHoehe()) )
             {               ///Treffer erkennen
-                if (Spiel->anzahlExplosion<10)
+                if (Spiel->getAnzahl().Explosion<10)
                 {
-                NaechsteExplosion->x=mX-20;
-                NaechsteExplosion->y=mY-20;
-                NaechsteExplosion->laufzeit=0;
-                (Spiel->anzahlExplosion)++;
+                NaechsteExplosion->explodieren(Alien[c].getX(),Alien[c].getY());
+                Spiel->setAnzahlExplosion(Spiel->getAnzahl().Explosion+1);
 
                 }
 
                 if (Spiel->isGameRunning())
                 {Spiel->addPunkte(Spieler);}               ///Punkte hinzufügen
 
-            return true;
+            return c;
             }
-    return false;
+        }
+    return -1;
 }
