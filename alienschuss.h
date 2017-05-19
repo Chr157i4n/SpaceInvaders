@@ -11,7 +11,7 @@ class alienschuss : public objekt
         alienschuss();
         virtual ~alienschuss();
 
-        bewegen(int schussgeschwAliens);
+        void bewegen(int schussgeschwAliens);
 
          int trefferpruefen(spieler* ZuPruefenderSpieler,spiel* Spiel);
 

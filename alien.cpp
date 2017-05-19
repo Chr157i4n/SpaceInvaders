@@ -1,6 +1,7 @@
 #include "alien.h"
 #include "alienschuss.h"
 #include <ctime>
+#include <stdlib.h>     /* srand, rand */
 
 alien::alien()
 {

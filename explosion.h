@@ -15,7 +15,7 @@ class explosion : public objekt
         int setLaufzeit(int laufzeit)
         {if (laufzeit>0) mLaufzeit=laufzeit;};
 
-        explodieren(int x,int Y);
+        void explodieren(int x,int Y);
         bool ueberpruefen();
 
     protected:

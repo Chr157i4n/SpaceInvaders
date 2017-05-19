@@ -5,6 +5,7 @@
 #include "alienschuss.h"
 #include "schuss.h"
 #include "explosion.h"
+#include <direct.h>
 
 spiel::spiel()
 {
@@ -69,7 +70,7 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
 
 }
 
-spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
+void spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
 {
     if (Anzahl.Alien %5 ==0)
     {
@@ -80,7 +81,7 @@ spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
     }
 }
 
-spiel::spawnReinigen(alienschuss Alienschuss[])
+void spiel::spawnReinigen(alienschuss Alienschuss[])
 {
 
             ///Schüsse beim Spawnpunkt entfernen
@@ -99,10 +100,10 @@ spiel::spawnReinigen(alienschuss Alienschuss[])
             }
 }
 
-spiel::highscore(spieler* Spieler)
+void spiel::highscore(spieler* Spieler)
 {
     bool hso=false,hs=false,chanceled=false;
-    _mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
+    mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
     wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
 
     highscoreTXT.Create("Highscore/Highscore.txt");             ///erstellt nur, falls nicht vorhanden
@@ -355,7 +356,7 @@ for(int i=10;i<highscoreTXTOnline.GetLineCount();i++)
 
 }
 
-spiel::einstellungen()
+void spiel::einstellungen()
 {
     wxTextEntryDialog *dlg = new wxTextEntryDialog((wxFrame *)NULL,wxT("Spielgeschwindigkeit (1-100)"),wxT("Einstellungen"),wxT("85"));
              if ( dlg->ShowModal() == wxID_OK )
@@ -438,7 +439,7 @@ spiel::einstellungen()
 
 }
 
-spiel::highscoreZeigen()
+void spiel::highscoreZeigen()
 {
 
         wxString tmp;

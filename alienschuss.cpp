@@ -13,7 +13,7 @@ alienschuss::~alienschuss()
     //dtor
 }
 
-alienschuss::bewegen(int schussgeschwAliens)
+void alienschuss::bewegen(int schussgeschwAliens)
 {
      mY=mY+schussgeschwAliens;
 }

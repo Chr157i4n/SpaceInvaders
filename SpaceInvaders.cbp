@@ -20,8 +20,8 @@
 					<Add directory="C:/wxWidgets-3.1.0/wx310/lib/gcc_dll/mswud" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library="C:/wxWidgets-3.1.0/SFML-2.3.1/lib/libsfml-audio-d.a" />
-					<Add library="C:/wxWidgets-3.1.0/SFML-2.3.1/lib/libsfml-system-d.a" />
+					<Add library="C:/Libarys/SFML-2.4.2/lib/libsfml-audio-d.a" />
+					<Add library="C:/Libarys/SFML-2.4.2/lib/libsfml-system-d.a" />
 					<Add directory="C:/wxWidgets-3.1.0/wx310/lib/gcc_dll" />
 				</Linker>
 			</Target>
@@ -65,16 +65,16 @@
 			<Add option="-DWXUSINGDLL" />
 			<Add option="-DwxUSE_UNICODE" />
 			<Add option="-DWX_PRECOMP" />
-			<Add directory="C:/wxWidgets-3.1.0/wx310/include" />
-			<Add directory="C:/wxWidgets-3.1.0/SFML-2.3.1/include" />
+			<Add directory="C:/Libarys/wx310/include" />
+			<Add directory="C:/Libarys/SFML-2.4.2/include" />
 		</Compiler>
 		<ResourceCompiler>
-			<Add directory="C:/wxWidgets-3.1.0/wx310/include" />
+			<Add directory="C:/Libarys/wx310/include" />
 		</ResourceCompiler>
 		<Linker>
 			<Add option="-mthreads" />
-			<Add library="C:/wxWidgets-3.1.0/wx310/lib/gcc_dll/libwxmsw31ud.a" />
-			<Add directory="C:/wxWidgets-3.1.0/SFML-2.3.1/lib" />
+			<Add library="C:/Libarys/wx310/lib/gcc_dll/libwxmsw31ud.a" />
+			<Add directory="C:/Libarys/SFML-2.4.2/lib" />
 		</Linker>
 		<Unit filename="SpaceInvadersApp.cpp" />
 		<Unit filename="SpaceInvadersApp.h" />

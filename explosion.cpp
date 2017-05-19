@@ -12,7 +12,7 @@ explosion::~explosion()
     //dtor
 }
 
-explosion::explodieren(int x,int y)
+void explosion::explodieren(int x,int y)
 {
     mX=x;
     mY=y;

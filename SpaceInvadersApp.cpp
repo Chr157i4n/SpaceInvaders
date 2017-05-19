@@ -2,6 +2,8 @@
 #include <wx/textfile.h>
 #include <thread>
 #include <wx/sound.h>
+#include <wx/wx.h>
+#include <wx/timer.h>
 
 #include "alien.h"
 #include "explosion.h"
@@ -44,9 +46,9 @@ RenderTimer* timer;
 
 
 wxBitmap bHintergrund,bRaumschiff,bSchuss,bAlienschuss,bAlien,bLeben,bExplosion;
-wxSound* sExplosion = new wxSound( "music\\explosion.wav" );
-wxSound* sSchuss = new wxSound("music\\laser.wav" );
-wxSound* sHintergrund = new wxSound("music\\SpaceInvadersSoundtrack.wav" );
+sf::SoundBuffer bufferexplosion,bufferschuss;
+sf::Sound Soundexplosion,Soundschuss;
+sf::Music Hintergrundmusik;
 bool mute=false;
 
 explosion Explosion[10];
@@ -56,7 +58,7 @@ schuss Schuss[10];
 spieler Spieler;
 spiel Spiel;
 
-tastatureingaben()
+void tastatureingaben()
 {
     if (Spiel.isGameInForeground() && Spiel.isGameRunning())
     {
@@ -77,13 +79,19 @@ tastatureingaben()
 
         Spieler.schiessen(&Schuss[Spiel.getAnzahl().Schuss]);
         Spiel.setAnzahlSchuss(Spiel.getAnzahl().Schuss+1);
-        if (!mute) sSchuss->Play();
+
+
+        if (!mute) Soundschuss.play();
+
+
+
+
     }
 
     }
 }
 
-schussloeschen()
+void schussloeschen()
 {
   for (int i=0;i<Spiel.getAnzahl().Schuss;i++)
         {
@@ -104,7 +112,7 @@ schussloeschen()
 
 }
 
-alienBewegen()
+void alienBewegen()
 {
     for (int i=0; i<Spiel.getAnzahl().Alien;i++)
     {
@@ -113,7 +121,7 @@ alienBewegen()
     }
 }
 
-trefferregistrieren()
+void trefferregistrieren()
 {
     ///Spieler Schüsse -> Aliens
     for (int i=0; i<Spiel.getAnzahl().Schuss; i++)
@@ -125,7 +133,7 @@ trefferregistrieren()
                 Spiel.objektLoeschen(Alien,c,&Spiel,'a');
                 Spiel.aliensGeschwindigkeitErhoehen(Alien);
                 i--;
-                if (!mute) sExplosion->Play();
+                if (!mute) Soundexplosion.play();
             }
 
     }
@@ -146,7 +154,7 @@ trefferregistrieren()
 
 }
 
-alienschiessen()
+void alienschiessen()
 {
     for (int i=0;i<Spiel.getAnzahl().Alien;i++)
     {
@@ -159,7 +167,7 @@ alienschiessen()
     }
 }
 
-endeerkennug()
+void endeerkennug()
 {
     if (Spieler.getLeben()<=0 && Spiel.isGameRunning())
     {
@@ -190,7 +198,7 @@ endeerkennug()
 
 }
 
-explosionenentfernen()
+void explosionenentfernen()
 {
     for (int i=0;i<Spiel.getAnzahl().Explosion;i++)
     {
@@ -205,13 +213,13 @@ explosionenentfernen()
     }
 }
 
-schiessenerlauben()
+void schiessenerlauben()
 {
     Spieler.schiessenerlauben(Spiel.getAnzahl().Schuss);
 
 }
 
-schussbewegen()
+void schussbewegen()
 {
     for (int i=0; i<Spiel.getAnzahl().Schuss;i++)
     {
@@ -312,6 +320,7 @@ public:
             Spieler.setLeben(Spiel.getlebenNEU());
             if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
             Spiel.normalerunde(&Spieler,Alien);
+
         }
 
         if (event.GetKeyCode()==WXK_F1)         /// F1      Hilfe
@@ -346,7 +355,7 @@ public:
         if (event.GetKeyCode()==77)
         {
            if (!mute) {mute=true;} else {mute=false;}
-           if (mute) {sHintergrund->Stop();} else {sHintergrund->Play();}
+           if (mute) {Hintergrundmusik.stop();} else {Hintergrundmusik.play();}
         }
 
     }
@@ -392,12 +401,19 @@ bool MyApp::OnInit()
                                                             ///funktionieren, wenn SpaceInvaders im Vordergrund ist
 
 
-    sHintergrund->Play(wxSOUND_ASYNC|wxSOUND_LOOP);         ///Spielt Hintergrundmusik ab
+   // sHintergrund->Play(wxSOUND_ASYNC|wxSOUND_LOOP);         ///Spielt Hintergrundmusik ab
 
-   // sf::SoundBuffer buffer;
-   // buffer.loadFromFile("music\\SpaceInvadersSoundtrack.wav");
+    Hintergrundmusik.openFromFile("music\\SpaceInvadersSoundtrack.wav");
+    bufferexplosion.loadFromFile("music\\explosion.wav");
+    bufferschuss.loadFromFile("music\\laser.wav" );
 
+    Soundexplosion.setBuffer(bufferexplosion);
+    Soundschuss.setBuffer(bufferschuss);
 
+    Soundexplosion.setVolume(10);
+    Soundschuss.setVolume(10);
+
+    Hintergrundmusik.play();
 
 
     //Spiel.normalerunde(&Spieler,Alien);
