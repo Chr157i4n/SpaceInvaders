@@ -1,5 +1,6 @@
 #ifndef SPIEL_H
 #define SPIEL_H
+#include <SFML/Network.hpp>
 
 class spieler;
 class alien;
@@ -18,19 +19,22 @@ struct anzahl
 class spiel
 {
      public:
+
+            void writeLog(wxString logtext);
+
             spiel();
             virtual ~spiel();
             void normalerunde(spieler* Spieler, alien Alien[]);
 
-            highscore(spieler* Spieler);
+            void highscore(spieler* Spieler,sf::Ftp* ftp);
 
-            einstellungen();
-            highscoreZeigen();
+            void einstellungen();
+            void highscoreZeigen(sf::Ftp* ftp);
 
-            aliensGeschwindigkeitErhoehen(alien Alien[]);
+            void aliensGeschwindigkeitErhoehen(alien Alien[]);
 
             template< class T >
-            objektLoeschen(T Objekt[],int zuLoeschender,spiel* Spiel,char typ)
+            void objektLoeschen(T Objekt[],int zuLoeschender,spiel* Spiel,char typ)
             {
                 int anzahlObjekte;
                 switch (typ)
@@ -59,7 +63,7 @@ class spiel
 
             }
 
-            spawnReinigen(alienschuss ObjectList[]);
+            void spawnReinigen(alienschuss ObjectList[]);
             void addPunkte(spieler* Spieler);
             void werteuebernehmen();
             void saveForegroundWindow(){fensterImVordergrund=GetForegroundWindow();};
@@ -101,7 +105,8 @@ class spiel
         int schussgeschwAliens=2, schussgeschwSpieler;
 
 
-    bool spiellaeuft=true;
+    sf::Ftp::Response response;
+    bool spiellaeuft=false;
     HWND fensterImVordergrund;
     int geschwXNEU=1, geschwYNEU=15, schusswahrscheinlichkeitNEU=5;       ///Einstellungen
     int lebenNEU=3, anzahlAlienNEU=20, lebenPUNKTE=3, schussgeschwSpielerNEU=3;

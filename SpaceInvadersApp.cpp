@@ -4,6 +4,7 @@
 #include <wx/sound.h>
 #include <wx/wx.h>
 #include <wx/timer.h>
+#include <direct.h>
 
 #include "alien.h"
 #include "explosion.h"
@@ -14,6 +15,7 @@
 #include "objekt.h"
 
 #include <SFML/Audio.hpp>
+#include <SFML/Network.hpp>
 
 
 
@@ -50,6 +52,8 @@ sf::SoundBuffer bufferexplosion,bufferschuss;
 sf::Sound Soundexplosion,Soundschuss;
 sf::Music Hintergrundmusik;
 bool mute=false;
+sf::Ftp ftp;
+
 
 explosion Explosion[10];
 alienschuss Alienschuss[100];
@@ -173,9 +177,10 @@ void endeerkennug()
     {
 
         Spiel.stopGame();
-        Spiel.highscore(&Spieler);
+        Spiel.highscore(&Spieler,&ftp);
         Spieler.setPunkte(0);
         Spiel.normalerunde(&Spieler,Alien);
+        Spiel.writeLog("Game lost, because the Player has no life left");
     }
 
     if (Alien[Spiel.getAnzahl().Alien-1].getY()>=360 && Spiel.isGameRunning())
@@ -183,16 +188,18 @@ void endeerkennug()
 
         Spiel.stopGame();
         Spieler.setLeben(0);
-        Spiel.highscore(&Spieler);
+        Spiel.highscore(&Spieler,&ftp);
         Spieler.setPunkte(0);
         timer->start(Spiel.getSpielgeschwindigkeit());
         Spiel.normalerunde(&Spieler,Alien);
+        Spiel.writeLog("Game lost, because the Aliens reached the Earth");
     }
 
     if (Spiel.getAnzahl().Alien<=0)
     {
         Spiel.setAnzahlAlien(Spiel.getAliensProRunde());
         Spiel.normalerunde(&Spieler,Alien);
+        Spiel.writeLog("one Wave finished");
     }
 
 
@@ -307,24 +314,27 @@ public:
 
         if ((event.GetKeyCode()==80))           ///P        Pause
         {
-
+            Spiel.writeLog(wxT("Player pressed P"));
            if (Spiel.isGameRunning()) {timer->Stop(); Spiel.stopGame();}
            else {timer->start(Spiel.getSpielgeschwindigkeit()); Spiel.resumeGame();}
         }
 
         if ((event.GetKeyCode()==82))           ///R        Neustart
         {
+            Spiel.writeLog(wxT("Player pressed R"));
             Spiel.werteuebernehmen();
             Spieler.setPunkte(0);
-            Spieler.pauseShooting();
+            Spieler.allowShooting();
             Spieler.setLeben(Spiel.getlebenNEU());
             if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
             Spiel.normalerunde(&Spieler,Alien);
+
 
         }
 
         if (event.GetKeyCode()==WXK_F1)         /// F1      Hilfe
         {
+            Spiel.writeLog(wxT("Player pressed F1"));
         timer->stop();
         wxMessageBox("A / Pfeiltaste Links                          Raumschiff nach links bewegen \nD / Pfeiltaste Rechts                       Raumschiff nach rechts bewegen \nW / Leertaste / Pfeiltaste oben     schiessen\nR                                                        Neustart \nF1                                                       Hilfe \nH                                                        Highscore","Hilfe" ,wxICON_QUESTION);
         if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
@@ -332,9 +342,9 @@ public:
 
         if (event.GetKeyCode()==72)            ///H        Highscore
         {
-
+            Spiel.writeLog(wxT("Player pressed H"));
             timer->stop();
-            Spiel.highscoreZeigen();
+            Spiel.highscoreZeigen(&ftp);
             if (Spiel.isGameRunning()) timer->start(Spiel.getSpielgeschwindigkeit());
         }
 
@@ -345,6 +355,7 @@ public:
 
         if (event.GetKeyCode()==69)         ///E        Einstellungen
         {
+            Spiel.writeLog(wxT("Player pressed E"));
             timer->stop();
 
             Spiel.einstellungen();
@@ -354,6 +365,7 @@ public:
 
         if (event.GetKeyCode()==77)
         {
+            Spiel.writeLog(wxT("Player pressed M"));
            if (!mute) {mute=true;} else {mute=false;}
            if (mute) {Hintergrundmusik.stop();} else {Hintergrundmusik.play();}
         }
@@ -374,14 +386,8 @@ EVT_KEY_DOWN(MyFrame::KeyDown)
 END_EVENT_TABLE()
 
 
-
-bool MyApp::OnInit()
+void loadAllFiles()
 {
-
-    std::srand(std::time(0));   ///Zufallszahlen generieren
-
-
-    ///Bilder Laden
     wxInitAllImageHandlers();
     bHintergrund.LoadFile("Images\\Hintergrund.png",wxBITMAP_TYPE_PNG);
     bRaumschiff.LoadFile("Images\\Raumschiff.png",wxBITMAP_TYPE_PNG);
@@ -390,18 +396,6 @@ bool MyApp::OnInit()
     bAlien.LoadFile("Images\\Alien.png",wxBITMAP_TYPE_PNG);                     ///Alle Bilder werden geladen
     bLeben.LoadFile("Images\\Leben.png",wxBITMAP_TYPE_PNG);
     bExplosion.LoadFile("Images\\Explosion.png",wxBITMAP_TYPE_PNG);
-
-
-
-
-    frame = new MyFrame();             ///Fenster wird erstellt
-    frame->Show();                      ///Fenster wird angezeigt
-
-    Spiel.saveForegroundWindow();                            ///Speichert (hoffentlich) SpaceInvaders, damit Tastatureingaben nur
-                                                            ///funktionieren, wenn SpaceInvaders im Vordergrund ist
-
-
-   // sHintergrund->Play(wxSOUND_ASYNC|wxSOUND_LOOP);         ///Spielt Hintergrundmusik ab
 
     Hintergrundmusik.openFromFile("music\\SpaceInvadersSoundtrack.wav");
     bufferexplosion.loadFromFile("music\\explosion.wav");
@@ -413,10 +407,40 @@ bool MyApp::OnInit()
     Soundexplosion.setVolume(10);
     Soundschuss.setVolume(10);
 
+    Hintergrundmusik.setLoop(true);
     Hintergrundmusik.play();
 
+    _mkdir("Highscore");
+    ftp.connect("staacraft.square7.ch", 21, sf::seconds(2));
+    ftp.login("staacraft_SpaceInvaders", "1324");
+    //ftp.login();
+    ftp.download("HighscoreOnline.txt", "Highscore", sf::Ftp::Ascii);
 
-    //Spiel.normalerunde(&Spieler,Alien);
+    Spiel.writeLog("all Files succesfully loaded");
+
+
+}
+
+bool MyApp::OnInit()
+{
+    Spiel.writeLog("Game has started");
+
+    std::srand(std::time(0));   ///Zufallszahlen generieren
+
+
+        ///Bilder+Musik+HighscoreOnline Laden
+     std::thread tLoadAllFiles(loadAllFiles);
+
+
+    frame = new MyFrame();             ///Fenster wird erstellt
+    frame->Show();                      ///Fenster wird angezeigt
+
+
+    Spiel.saveForegroundWindow();                            ///Speichert (hoffentlich) SpaceInvaders, damit Tastatureingaben nur
+                                                            ///funktionieren, wenn SpaceInvaders im Vordergrund ist
+
+    tLoadAllFiles.join();
+
     return true;
 }
 
@@ -432,6 +456,10 @@ END_EVENT_TABLE()
 
 void RenderTimer::Notify()
 {
+
+
+   if (Spiel.isGameRunning())
+   {
     std::thread t0(schussbewegen);
     std::thread t1(schiessenerlauben);
     std::thread t2(tastatureingaben);               ///Startet alle Funktionen als Threads
@@ -453,7 +481,7 @@ void RenderTimer::Notify()
     alienschiessen();
 
     pane->Refresh();       ///Das Bild wird neu gemalt
-
+   }
 }
 
 

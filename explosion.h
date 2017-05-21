@@ -12,7 +12,7 @@ class explosion : public objekt
 
         int getLaufzeit(){return mLaufzeit;};
 
-        int setLaufzeit(int laufzeit)
+        void setLaufzeit(int laufzeit)
         {if (laufzeit>0) mLaufzeit=laufzeit;};
 
         void explodieren(int x,int Y);

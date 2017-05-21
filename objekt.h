@@ -15,9 +15,9 @@ class objekt
         int getHoehe(){return mHoehe;};
 
 
-        int setX(int x)
+        void setX(int x)
         {if (x>0 && x<500) mX=x;};
-        int setY(int y)
+        void setY(int y)
         {if (y>0 && y<500) mY=y;};
 
 

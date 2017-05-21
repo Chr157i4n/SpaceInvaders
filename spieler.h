@@ -1,9 +1,10 @@
 #ifndef SPIELER_H
 #define SPIELER_H
+#include "objekt.h"
 
 class schuss;
 
-class spieler
+class spieler : public objekt
 {
     public:
         spieler();
@@ -13,23 +14,22 @@ class spieler
         void schiessen(schuss* Schuss);
 
 
-        bool darfschiessen=true;
-        int leben=-100;
-        int punkte=0;
+        void setPunkte(int neuepunkte){ punkte=neuepunkte;};
+        void addPunkte(int neuepunkte){if (neuepunkte>punkte) {punkte=neuepunkte;} else {punkte++;}};
+        int getPunkte(){return punkte;};
 
+        void setLeben(int neueLeben);
+        int getLeben(){return leben;};
 
+        void allowShooting(){darfschiessen=true;};
+        void pauseShooting(){darfschiessen=false;};
+        bool ShootingAllowed(){return darfschiessen;};
 
-
-        int getX(){return mX;};
-        int getY(){return mY;};
         wxString getName(){return mName;};
-
-        int setX(int x)
-        {if (x>0 && x<500) mX=x;};
-        int setY(int y)
-        {if (y>0 && y<500) mY=y;};
-        int setName(wxString name)
+        void setName(wxString name)
         {mName=name;};
+
+
 
         void bewegen(int wert)
         {
@@ -41,10 +41,12 @@ class spieler
     protected:
 
     private:
-        int schusszaehler=0;
-        int mX=250-16;        //Anfangspositionen
-        int mY=350;
 
+        bool darfschiessen=true;
+        int leben=-100;
+        int punkte=0;
+
+        int schusszaehler=0;
         wxString mName="";
 
 };

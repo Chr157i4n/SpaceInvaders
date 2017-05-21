@@ -67,7 +67,7 @@ void spiel::normalerunde(spieler* Spieler, alien Alien[])
 
         }
 
-
+    writeLog(wxT("started new round"));
 }
 
 void spiel::aliensGeschwindigkeitErhoehen(alien Alien[])
@@ -100,10 +100,26 @@ void spiel::spawnReinigen(alienschuss Alienschuss[])
             }
 }
 
-void spiel::highscore(spieler* Spieler)
+void spiel::writeLog(wxString logtext)
 {
+    wxTextFile logTXT( wxT("log.txt") );
+    logTXT.Create("log.txt");             ///erstellt nur, falls nicht vorhanden
+    logTXT.Open("log.txt");
+    logTXT.AddLine(logtext);
+    logTXT.Write();
+    logTXT.Close();
+}
+
+void spiel::highscore(spieler* Spieler,sf::Ftp* ftp)
+{
+    mkdir("Highscore");
+
+    response = ftp->download("HighscoreOnline.txt", "Highscore", sf::Ftp::Ascii);
+    writeLog(response.getMessage());
+    writeLog(wxT("Downloaded Highscore"));
+
     bool hso=false,hs=false,chanceled=false;
-    mkdir("Highscore");                                ///erstellt nur, falls nicht vorhanden
+                                   ///erstellt nur, falls nicht vorhanden
     wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
 
     highscoreTXT.Create("Highscore/Highscore.txt");             ///erstellt nur, falls nicht vorhanden
@@ -352,6 +368,10 @@ for(int i=10;i<highscoreTXTOnline.GetLineCount();i++)
     highscoreTXTOnline.Write();
     highscoreTXTOnline.Close();
 
+
+    response = ftp->upload("Highscore/HighscoreOnline.txt", "", sf::Ftp::Ascii);
+    writeLog(response.getMessage());
+    writeLog(wxT("Uploaded Highscore"));
 }
 
 }
@@ -439,11 +459,16 @@ void spiel::einstellungen()
 
 }
 
-void spiel::highscoreZeigen()
+void spiel::highscoreZeigen(sf::Ftp* ftp)
 {
+        _mkdir("Highscore");
+        response = ftp->download("HighscoreOnline.txt", "Highscore", sf::Ftp::Ascii);
+        writeLog(response.getMessage());
+        writeLog(wxT("Downloaded Highscore"));
+
 
         wxString tmp;
-        _mkdir("Highscore");
+        //ftp.download("HighscoreOnline.txt", "Highscore", sf::Ftp::Ascii);
 
         wxTextFile highscoreTXT( wxT("Highscore/Highscore.txt") );
         highscoreTXT.Create("Highscore/Highscore.txt");
