@@ -1,0 +1,37 @@
+Bedienungsanleitung für Spieler
+SpaceInvaders
+Bei dem Spiel geht es darum, die Aliens daran zu hindern die Erde zu erobern. Der Spieler ist der
+letzte Widerstand der Erde gegen die Aliens.
+Man hat dazu mehrere Raumschiffe zur Verfügung.
+Das Spiel ist folgerndermaßen aufgebaut:
+Von oben kommen die Aliens und wollen die Erde ganz unten erreichen. Der Spieler befindet sich
+knapp oberhalb des unteren Randes. Rechts oben kann man seinen Punktestand ablesen.
+Man kann entweder mit A und D oder mit den Pfeiltasten rechts und links das Raumschiff in der
+Horizontalen bewegen.
+Mit W, Leertaste oder Pfeiltaste nach oben kann man schießen. Man kann nur in einem gewissen
+Zeitabstand schießen. Trotzdem kann man die Schusstaste gedrückt halten.
+Treffer werden nur registriert, wenn der Schuss einen der Aliens, bzw. ein Alienschuss den Spieler
+komplett trifft und nicht nur streift.
+Innerhalb einer Welle wird die Geschwindigkeit der Aliens schrittweise erhöht, immer, wenn man 5
+Aliens abschießt.
+Sobald man alle Aliens abgeschossen hat, beginnt eine neue Welle. Bei jeder Welle kommt immer
+ein Gegner mehr.
+Der Spieler kann also nicht gewinnen. Man kann als Spieler nur möglichst viele Punkte sammeln,
+bis man verliert. Dadurch kann man dann den Highscore knacken.
+Der Highscore wird einmal lokal auf dem PC gespeichert und zusätzlich auf einem Server im
+Internet. Wenn man H drückt, werden vom lokalen und und online Highscore die besten 10 Plätze
+angezeigt.
+In der neusten Version wird der Name von dem bestplatzierten im lokalen Highscore als Vorschlag
+für die Highscore Eingabe genutzt.
+Die Aliens hingegen gewinnen, sobald sie ganz unten die Erde erreicht haben oder der Spieler alle
+Leben verloren hat.
+Die Leben des Spielers werden links unten angezeigt. Man hat am Anfang 3 Leben.
+Die Aliens bewegen sich von links nach rechts und wieder zurück.
+Immer, wenn ein Alien den Rand rechts oder links berührt, bewegt es sich ein Stückchen nach
+unten.
+Die sonstigen Tastenbefehle sind:
+H – Highscore
+M – Musik aus/anmachen
+R – Neustarten
+F1 – Hilfe
+Alt+F4 um Admin zu werden
