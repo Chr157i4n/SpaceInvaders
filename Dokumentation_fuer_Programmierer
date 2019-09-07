@@ -1,0 +1,48 @@
+Bedienungsanleitung für Programmierer
+SpaceInvaders
+Unser Spiel ist mit C++ programmiert. Für die Grafik nutzen wir die Libary wxWidgets. Zusätzlich
+für die Onlinefunktionen und die Soudausgabe wird die Libary SFML benutzt.
+SpaceInvaders nutzt eine Renderloop zur kontinuierlichen Bilderzeugung. Der eigentliche
+Spielablauf läuft in einzelnen Funktionen im Hauptprogramm ab. Diese laufen parallel in Threads
+ab.
+Trotzdem läuft das Spiel nicht mit der erwarteten Performance, dies liegt mit sehr hoher
+Wahrscheinlichkeit an der Grafiklibary wxWidgets. Diese ist wohl für Programme und Anwendung
+mit Fenstern und Dialogen geeignet, aber nicht wirklich gut für die Ausgabe von Spielen mit
+liverendering.
+Die für den Spielablauf benötigten Variablen werden größtenteils in der Klasse „Spiel“ abgelegt.
+Alle Spielobjekte sind abgeleitete Klassen von der Klasse „Objekt“.
+Die Klasse „Objekt“ ist ein abstrakte Klasse, von ihr kann kein Objekt erzeugt werden. Sie vererbt
+an alle Spielobjekte die Variablen x,y,breite und höhe.
+Zusätzlich bekommen alle Spielobjekte durch die Vererbung die getter und setter Methoden für x
+und x. Für breite und höhe gibt es nur getter Methoden, da die Werte für höhe und breite der
+verschiedenen Spielobjekte im Konstruktor der jeweiligen Klasse gesetzt werden.
+Die einzelnen vererbten Klassen von Objekt (Spielobjekte) haben dann noch nötige Fähigkeiten,
+wie z.b: bewegenX, bewegenY, schießen und trefferprüfen.
+Trefferprüfen ist eine Fähigkeit der Klasse Schuss und Alienschuss. Man muss also für jedes Alien
+Trefferprüfen ausführen. Dabei wird das Zielarray übergeben.
+Für den Schuss des Spieler muss man demnach das Array der Aliens übergeben. Die Methode prüft
+dann selber ob, ein Treffer von dem Schuss mit einem der Aliens. Falls ein Treffer existiert wird der
+Index des Aliens zurückgegeben. Falls kein Treffer besteht wird -1 zurückgeben (0 ist auch ein
+möglicher Index).
+Die wichtigen Funktion für den Spielablauf sind in der Klasse „Spiel“, wie z.B.: normalerunde,
+stopGame, werteübernehmen, addpunkte, spawnReinigen und objektlöschen.
+Normalerunde startet eine neue Welle, wird einmal bei Spielstart und immer, wenn man das letzte
+Alien zerstört wird.
+StopGame stoppt das Spiel… Allerdings muss der Timer vorher innerhalb des Fensters gestoppt
+werden. Bis jetzt haben wir keine Möglichkeit gefunden, von außerhalb auf den Timer zuzugreifen.
+Werteübernehmen ist dazu, dass die Einstellungen nicht direkt ins Spiel übertragen werden, sonst
+erst, wenn man mit R das Spiel neu startet.
+Addpunkte rechnet aufgrund der Spieleinstellungen aus, wie viele Punkte an den „Spieler“
+übertragen werden müssen. Der „Spieler“ hat eine Funktion addpunkte um die neuen Punkte den
+eigenen hinzuzufügen und eine Funktion setpunkte, die benutzt wird um den Punktstand wieder auf
+0 zu setzen, falls man R drückt.
+Bei addpunkte wird geprüft, ob die neue Punktzahl größer als 0, bzw. die alte ist.
+Objektlöschen wird gebraucht, wenn man ein Alien abschießt.Die Aliens, Schüsse, Alienschüsse und Explosionen werden in einem Array verwaltet. Diese
+Speicherliste bietet keine eigene Möglichkeit ein Element aus der Mitte zu löschen.
+Objektlöschen überschreibt alle Objekte in dem Array mit dem Element dahinter. Dadurch wird die
+Lücke in der Mitte geschlossen und das Problem, dass ein Objekt gelöscht werden, an das Ende des
+Arrays verschoben. In der Klasse „Spiel“ wird deshalb die Anzahl der Spielobjekte gespeichert und
+immer aktuell gehalten. In der Funktion Objektlöschen wird die Anzahl der Spielobjekte um eins
+reduziert.
+Die Anzeige funktioniert dann auch mit diesen Variablen. Und zwar werden alle Objekte von Index
+0 bis zur Anzahl der Objekte angezeigt.
