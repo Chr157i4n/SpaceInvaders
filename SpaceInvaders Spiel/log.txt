@@ -1,0 +1,55 @@
+Clean Install
+connecting to File Server ...
+ Welcome to Square7, FTP server standing by ...
+-Login successful, your current directory is /
+230 15444 Kbytes used (0%) - authorized: 7340032 Kb
+connected to File Server
+
+starting Update ...
+-File successfully transferred
+226 2.766 seconds (measured here), 230.48 Kbytes per second
+
+Game downloading ...
+-File successfully transferred
+226 2.250 seconds (measured here), 234.59 Kbytes per second
+Game downloaded
+
+Gamefiles downloading ...
+-File successfully transferred
+226 34.101 seconds (measured here), 253.87 Kbytes per second
+Gamefiles downloaded
+
+finished Downloads
+-File successfully transferred
+226 0.062 seconds (measured here), 224.58 bytes per second
+updated VersionInfo
+unpacking Files ...
+unpacked App
+unpacked Gamefiles
+Update Ready
+Updated to Version: 0.0
+
+
+Game has started
+Gameversion loaded: 4.0
+all Files succesfully loaded
+Game closed
+
+
+Game has started
+Gameversion loaded: 4.0
+all Files succesfully loaded
+Game closed
+
+
+Game has started
+Gameversion loaded: 4.0
+all Files succesfully loaded
+Player pressed R
+started new round
+Game lost, because the Player has no life left
+-File successfully transferred
+226 0.063 seconds (measured here), 2.73 Kbytes per second
+Downloaded Highscore
+started new round
+Game closed

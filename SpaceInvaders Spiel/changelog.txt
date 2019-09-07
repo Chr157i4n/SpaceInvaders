@@ -1,0 +1,32 @@
+////////////////////////////////////////////
+///////////////Changelog////////////////////
+////////////////////////////////////////////
+Version 4.0:
+-nur noch private Variablen
+-Musik
+
+Version 3.6:
+-Funktionen in Klassen ausgelagert
+-Objekte handeln nun autark
+
+Version 3.5:
+-Bugfixes: Runde startete nicht neustarten
+-Einstellung: Geschwindigkeit der Schuesse
+////////////////////////////////////////////
+///////////////Steuerung////////////////////
+////////////////////////////////////////////
+
+Du steuerst das Raumschiff entweder mit 
+A und D oder mit den Pfeiltasten.
+
+Mit W, Leertaste oder Pfeiltaste Oben
+kannst du schiessen.
+
+Du kannst das Spiel mit P pausieren 
+oder mit R neustarten.
+
+Den Highscore kannst du dir mit H 
+anzeigen lassen.
+
+Zur Not kannst du im Spiel jederzeit mit
+F1 die Hilfe anzeigen lassen.
